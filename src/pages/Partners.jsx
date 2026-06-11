@@ -1,13 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ArrowRight, Award, ShieldAlert, Cpu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { mockBrands } from '../data/mockData';
+import { brandService } from '../services/brandService';
+import { getFileUrl } from '../services/api';
 
 export default function Partners() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [brands, setBrands] = useState([]);
 
-  const filteredBrands = mockBrands.filter((b) =>
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const response = await brandService.getAll();
+        if (response.success && response.data) {
+          setBrands(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching brands:', err);
+      }
+    };
+    fetchBrands();
+  }, []);
+
+  const mapBrand = (b) => ({
+    id: b._id,
+    name: b.brandName,
+    logo: getFileUrl(b.logo),
+    description: b.description || 'Authorized integration and supply partner.',
+    productsCount: b.productsCount || 85
+  });
+
+  const activeBrands = brands.length > 0 ? brands.map(mapBrand) : mockBrands;
+
+  const filteredBrands = activeBrands.filter((b) =>
     b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     b.description.toLowerCase().includes(searchQuery.toLowerCase())
   );

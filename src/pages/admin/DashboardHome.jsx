@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Cpu,
@@ -16,19 +16,47 @@ import {
   UserCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { adminService } from '../../services/adminService';
 
 export default function DashboardHome() {
+  const [data, setData] = useState({
+    products: 0,
+    brands: 0,
+    categories: 0,
+    blogs: 0,
+    news: 0,
+    downloads: 0,
+    inquiries: 0,
+    jobOpenings: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await adminService.getDashboardStats();
+        if (response.success && response.data) {
+          setData(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
   
   // 8 Stats cards data matching prompt requirements
   const stats = [
-    { label: 'Total Products', value: '145', icon: <Cpu className="w-5 h-5 text-indigo-500" />, color: 'indigo' },
-    { label: 'Total Brands', value: '8', icon: <Award className="w-5 h-5 text-amber-500" />, color: 'amber' },
-    { label: 'Total Categories', value: '6', icon: <Layers className="w-5 h-5 text-emerald-500" />, color: 'emerald' },
-    { label: 'Total Blogs', value: '12', icon: <BookOpen className="w-5 h-5 text-pink-500" />, color: 'pink' },
-    { label: 'Total News', value: '8', icon: <Newspaper className="w-5 h-5 text-blue-500" />, color: 'blue' },
-    { label: 'Total Downloads', value: '24', icon: <Download className="w-5 h-5 text-teal-500" />, color: 'teal' },
-    { label: 'Total Inquiries', value: '38', icon: <Mail className="w-5 h-5 text-rose-500" />, color: 'rose' },
-    { label: 'Total Job Openings', value: '4', icon: <Briefcase className="w-5 h-5 text-orange-500" />, color: 'orange' }
+    { label: 'Total Products', value: data.products, icon: <Cpu className="w-5 h-5 text-indigo-500" />, color: 'indigo' },
+    { label: 'Total Brands', value: data.brands, icon: <Award className="w-5 h-5 text-amber-500" />, color: 'amber' },
+    { label: 'Total Categories', value: data.categories, icon: <Layers className="w-5 h-5 text-emerald-500" />, color: 'emerald' },
+    { label: 'Total Blogs', value: data.blogs, icon: <BookOpen className="w-5 h-5 text-pink-500" />, color: 'pink' },
+    { label: 'Total News', value: data.news, icon: <Newspaper className="w-5 h-5 text-blue-500" />, color: 'blue' },
+    { label: 'Total Downloads', value: data.downloads, icon: <Download className="w-5 h-5 text-teal-500" />, color: 'teal' },
+    { label: 'Total Inquiries', value: data.inquiries, icon: <Mail className="w-5 h-5 text-rose-500" />, color: 'rose' },
+    { label: 'Total Job Openings', value: data.jobOpenings, icon: <Briefcase className="w-5 h-5 text-orange-500" />, color: 'orange' }
   ];
 
   const recentActivities = [
@@ -82,13 +110,19 @@ export default function DashboardHome() {
             </div>
             
             <div className="mt-4 flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-slate-900 leading-none">
-                {item.value}
-              </span>
-              <span className="text-[9px] text-brand-teal font-extrabold flex items-center gap-0.5">
-                <TrendingUp className="w-3.5 h-3.5" />
-                +12%
-              </span>
+              {loading ? (
+                <div className="h-6 w-16 bg-slate-200 animate-pulse rounded-lg" />
+              ) : (
+                <>
+                  <span className="text-2xl font-extrabold text-slate-900 leading-none">
+                    {item.value}
+                  </span>
+                  <span className="text-[9px] text-brand-teal font-extrabold flex items-center gap-0.5">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    +12%
+                  </span>
+                </>
+              )}
             </div>
           </motion.div>
         ))}

@@ -1,71 +1,156 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, X, Award, Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit2, Trash2, X, Award, Eye, AlertCircle, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockBrands } from '../../data/mockData';
+import { brandService } from '../../services/brandService';
+import ConfirmModal from '../../components/ConfirmModal';
 
 export default function BrandManager() {
-  const [brands, setBrands] = useState(mockBrands);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [currentBrand, setCurrentBrand] = useState(null);
 
+  // Confirm Modal states
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   // Form states
   const [formName, setFormName] = useState('');
-  const [formLogo, setFormLogo] = useState('');
   const [formDesc, setFormDesc] = useState('');
-  const [formCount, setFormCount] = useState(0);
+  const [formFile, setFormFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  const fetchBrands = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await brandService.getAll({ limit: 100 });
+      if (response.success) {
+        setBrands(response.data || []);
+      } else {
+        setError('Failed to fetch partner brands.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while loading partner brands.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+  const filteredBrands = brands.filter((b) =>
+    (b.brandName || '').toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleOpenAdd = () => {
     setCurrentBrand(null);
     setFormName('');
-    setFormLogo('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Siemens-logo.svg/320px-Siemens-logo.svg.png');
     setFormDesc('');
-    setFormCount(0);
+    setFormFile(null);
+    setPreviewUrl('');
     setModalOpen(true);
   };
 
   const handleOpenEdit = (b) => {
     setCurrentBrand(b);
-    setFormName(b.name);
-    setFormLogo(b.logo);
+    setFormName(b.brandName);
     setFormDesc(b.description || '');
-    setFormCount(b.productsCount || 0);
+    setFormFile(null);
+    setPreviewUrl(b.logo || '');
     setModalOpen(true);
   };
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    if (!formName.trim()) return;
-
-    if (currentBrand) {
-      setBrands(
-        brands.map((b) =>
-          b.id === currentBrand.id
-            ? {
-                ...b,
-                name: formName,
-                logo: formLogo,
-                description: formDesc,
-                productsCount: parseInt(formCount) || 0,
-              }
-            : b
-        )
-      );
-    } else {
-      const newBrand = {
-        id: formName.toLowerCase().replace(/\s+/g, '-'),
-        name: formName,
-        logo: formLogo,
-        description: formDesc,
-        productsCount: parseInt(formCount) || 0,
-      };
-      setBrands([...brands, newBrand]);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
-    setModalOpen(false);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this partner manufacturer brand catalog?')) {
-      setBrands(brands.filter((b) => b.id !== id));
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!formName.trim()) return;
+    if (!currentBrand && !formFile) {
+      alert('Please upload a logo file for the new brand.');
+      return;
+    }
+
+    setSubmitLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('brandName', formName);
+      formData.append('description', formDesc);
+      if (formFile) {
+        formData.append('logo', formFile); // Field name is 'logo' in multer config
+      }
+
+      let response;
+      if (currentBrand) {
+        response = await brandService.update(currentBrand._id, formData);
+      } else {
+        response = await brandService.create(formData);
+      }
+
+      if (response.success) {
+        fetchBrands();
+        setModalOpen(false);
+      } else {
+        alert(response.message || 'Failed to save brand.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error occurred while saving brand.');
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleteLoading(true);
+    try {
+      const response = await brandService.delete(deleteId);
+      if (response.success) {
+        setBrands(brands.filter((b) => b._id !== deleteId));
+        setConfirmOpen(false);
+      } else {
+        alert(response.message || 'Failed to delete brand.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error occurred during deletion.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (brand) => {
+    try {
+      // Note: We can implement status toggling if needed
+      // brandService has toggleStatus, let's call it!
+      const response = await brandService.toggleStatus(brand._id);
+      if (response.success) {
+        setBrands(
+          brands.map((b) =>
+            b._id === brand._id ? { ...b, status: b.status === 'active' ? 'inactive' : 'active' } : b
+          )
+        );
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -92,63 +177,108 @@ export default function BrandManager() {
         </button>
       </div>
 
-      {/* Grid List of Brand cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {brands.map((b) => (
-          <div
-            key={b.id}
-            className="bg-white rounded-2xl border border-slate-200/50 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-          >
-            <div className="space-y-4">
-              {/* Logo frame */}
-              <div className="h-14 bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-center overflow-hidden">
-                <img src={b.logo} alt={b.name} className="max-h-full max-w-[120px] object-contain" />
-              </div>
-              
-              <div className="space-y-1">
-                <h4 className="font-display font-bold text-slate-950 text-xs flex items-center gap-1.5">
-                  {b.name}
-                  <span className="text-[8px] font-bold text-brand-teal bg-brand-teal/10 px-1.5 py-0.5 rounded">
-                    Authorized
-                  </span>
-                </h4>
-                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                  {b.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Actions & Metrics */}
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-6">
-              <div className="text-[10px] text-slate-400 font-bold">
-                {b.productsCount || 0} Products carried
-              </div>
-              
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => handleOpenEdit(b)}
-                  className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-200"
-                >
-                  <Edit2 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => handleDelete(b.id)}
-                  className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg border border-red-100"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-
-          </div>
-        ))}
+      {/* Search and reload */}
+      <div className="flex gap-3 bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm items-center justify-between">
+        <input
+          type="text"
+          placeholder="Search brands by name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-slate-50 border border-slate-200 text-xs px-4 py-2.5 rounded-xl focus:outline-none focus:bg-white w-64 text-slate-900"
+        />
+        <button
+          onClick={fetchBrands}
+          className="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200/60 rounded-xl text-slate-600 cursor-pointer"
+          title="Reload Brands"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
+
+      {/* Loading state */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="bg-white rounded-2xl border border-slate-200/50 p-5 shadow-sm h-48 animate-pulse space-y-4">
+              <div className="bg-slate-200 h-14 rounded-xl w-full" />
+              <div className="bg-slate-200 h-4 rounded w-2/3" />
+              <div className="bg-slate-200 h-3 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="bg-red-50 border border-red-100 p-5 rounded-2xl text-xs text-red-600 font-semibold flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-red-500" />
+          <span>{error}</span>
+        </div>
+      ) : filteredBrands.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-200/50 shadow-sm p-12 text-center text-slate-400 font-semibold text-xs w-full col-span-full">
+          No manufacturer brands found. Click "Add Partner Brand" to create one.
+        </div>
+      ) : (
+        /* Grid List of Brand cards */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredBrands.map((b) => (
+            <div
+              key={b._id}
+              className={`bg-white rounded-2xl border p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between ${
+                b.status === 'inactive' ? 'border-slate-200/30 bg-slate-50/50 opacity-75' : 'border-slate-200/50'
+              }`}
+            >
+              <div className="space-y-4">
+                {/* Logo frame */}
+                <div className="h-14 bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-center overflow-hidden relative">
+                  <img src={b.logo} alt={b.brandName} className="max-h-full max-w-[120px] object-contain" />
+                </div>
+                
+                <div className="space-y-1">
+                  <h4 className="font-display font-bold text-slate-950 text-xs flex items-center justify-between gap-1.5">
+                    <span>{b.brandName}</span>
+                    <button
+                      onClick={() => handleToggleStatus(b)}
+                      className={`text-[8px] font-bold px-1.5 py-0.5 rounded cursor-pointer transition-colors ${
+                        b.status === 'active' ? 'text-brand-teal bg-brand-teal/10 hover:bg-brand-teal/20' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
+                      }`}
+                    >
+                      {b.status === 'active' ? 'Active' : 'Inactive'}
+                    </button>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                    {b.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions & Metrics */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end mt-6">
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => handleOpenEdit(b)}
+                    className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-200 cursor-pointer"
+                    title="Edit Brand"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(b._id)}
+                    className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg border border-red-100 cursor-pointer"
+                    title="Delete Brand"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Editor Modal Overlay */}
       <AnimatePresence>
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-            <div className="absolute inset-0 cursor-default" onClick={() => setModalOpen(false)} />
+            <div className="absolute inset-0 cursor-default" onClick={() => !submitLoading && setModalOpen(false)} />
             
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -156,9 +286,11 @@ export default function BrandManager() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="relative bg-white max-w-lg w-full rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6 z-10"
             >
-              <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full">
-                <X className="w-5 h-5" />
-              </button>
+              {!submitLoading && (
+                <button onClick={() => setModalOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full">
+                  <X className="w-5 h-5" />
+                </button>
+              )}
 
               <div>
                 <h3 className="font-display font-extrabold text-lg text-slate-900">
@@ -176,7 +308,7 @@ export default function BrandManager() {
                     required
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white"
+                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs"
                   />
                 </div>
 
@@ -185,43 +317,45 @@ export default function BrandManager() {
                   <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Brand Description Details</label>
                   <textarea
                     rows={3}
-                    required
                     value={formDesc}
                     onChange={(e) => setFormDesc(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none"
+                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs"
                   />
                 </div>
 
-                {/* Logo & Product count */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Logo PNG Link</label>
-                    <input
-                      type="text"
-                      required
-                      value={formLogo}
-                      onChange={(e) => setFormLogo(e.target.value)}
-                      className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Products In Catalog</label>
-                    <input
-                      type="number"
-                      required
-                      value={formCount}
-                      onChange={(e) => setFormCount(e.target.value)}
-                      className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none"
-                    />
-                  </div>
+                {/* Logo file upload */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
+                    {currentBrand ? 'Replace Brand Logo File (Optional)' : 'Upload Brand Logo File (Required)'}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                  />
                 </div>
+
+                {/* Logo preview */}
+                {previewUrl && (
+                  <div className="h-20 bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-center overflow-hidden">
+                    <img src={previewUrl} className="max-h-full object-contain" alt="Logo Preview" />
+                  </div>
+                )}
 
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl mt-4 cursor-pointer"
+                  disabled={submitLoading}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl mt-4 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-75 text-xs"
                 >
-                  Save Brand Settings
+                  {submitLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving Brand Settings...
+                    </>
+                  ) : (
+                    'Save Brand Settings'
+                  )}
                 </button>
 
               </form>
@@ -229,6 +363,16 @@ export default function BrandManager() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Deletion modal */}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteLoading}
+        title="Delete Partner Brand"
+        message="Are you sure you want to permanently delete this manufacturer brand? It will be removed from partner lists."
+      />
 
     </div>
   );

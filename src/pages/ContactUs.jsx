@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../services/api';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -18,27 +19,26 @@ export default function ContactUs() {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Full Name is required';
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required';
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-
     const phoneRegex = /^[0-9]{10}$/;
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
     } else if (!phoneRegex.test(formData.phone.replace(/[\s-+()]/g, ''))) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
-
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'Subject is required';
+    }
     if (!formData.message.trim()) {
       newErrors.message = 'Please write your message';
     }
-
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0;                                                                             
   };
 
   const handleInputChange = (e) => {
@@ -49,16 +49,34 @@ export default function ContactUs() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      // Trim inputs before sending
+      const payload = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        subject: formData.subject,
+        message: formData.message.trim(),
+      };
+      const response = await api.post('/contact', payload);
+      if (response?.data?.success) {
+        setIsSubmitted(true);
+        // Reset form after success
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      } else {
+        setErrors((prev) => ({ ...prev, api: response?.data?.message || 'Submission failed.' }));
+      }
+    } catch (err) {
+      console.error('Contact submission error:', err);
+      setErrors((prev) => ({ ...prev, api: err.response?.data?.message || 'An error occurred while sending.' }));
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -231,6 +249,7 @@ export default function ContactUs() {
                       <option value="Robotic Cell integration">FANUC Collaborative Arms Automation</option>
                       <option value="General Sales Support">General Product Support</option>
                     </select>
+                    {errors.subject && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.subject}</p>}
                   </div>
 
                   {/* Message */}
@@ -266,6 +285,9 @@ export default function ContactUs() {
                       </>
                     )}
                   </button>
+                  {errors.api && (
+                    <p className="text-red-500 text-[10px] mt-2 text-center">{errors.api}</p>
+                  )}
                 </form>
               ) : (
                 <div className="text-center py-12 flex flex-col items-center justify-center h-full">

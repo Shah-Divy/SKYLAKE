@@ -35,21 +35,22 @@ export default function Login() {
     },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setErrorMsg('');
     setIsSubmitLoading(true);
 
-    // Simulate short network latency
-    setTimeout(() => {
-      const success = login(data.email, data.password);
-      setIsSubmitLoading(false);
-
-      if (success) {
+    try {
+      const result = await login(data.email, data.password);
+      if (result.success) {
         navigate('/admin/dashboard');
       } else {
-        setErrorMsg('Invalid administrative credentials. Please verify email and password.');
+        setErrorMsg(result.message || 'Invalid administrative credentials. Please verify email and password.');
       }
-    }, 1500);
+    } catch (err) {
+      setErrorMsg('An unexpected authentication error occurred.');
+    } finally {
+      setIsSubmitLoading(false);
+    }
   };
 
   return (

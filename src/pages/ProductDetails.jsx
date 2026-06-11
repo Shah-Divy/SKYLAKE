@@ -15,14 +15,100 @@ import {
   Info
 } from 'lucide-react';
 import { mockProducts } from '../data/mockData';
+import { productService } from '../services/productService';
+import { getFileUrl } from '../services/api';
+import api from '../services/api';
 import ProductCard from '../components/ProductCard';
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const product = mockProducts.find((p) => p.id === parseInt(id));
+  const [product, setProduct] = useState(null);
+  const [relatedProductsList, setRelatedProductsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiFailed, setApiFailed] = useState(false);
+
+  const mapProduct = (doc) => ({
+    id: doc._id,
+    title: doc.productName,
+    model: doc.modelNumber,
+    hsnCode: doc.hsnCode || '',
+    brand: doc.brandId?.brandName || 'Generic',
+    category: doc.categoryId?.categoryName || 'General',
+    price: doc.price,
+    discountPrice: doc.discountedPrice !== null && doc.discountedPrice !== undefined ? doc.discountedPrice : doc.price,
+    shortDescription: doc.description ? (doc.description.substring(0, 150) + '...') : '',
+    description: doc.description,
+    images: doc.images?.map(img => getFileUrl(img)) || [],
+    videoEmbed: doc.videoLink || '',
+    brochureUrl: doc.pdfFile ? getFileUrl(doc.pdfFile) : '',
+    rating: 4.7,
+    specs: {
+      'Model Number': doc.modelNumber,
+      'HSN Code': doc.hsnCode || '85371010',
+      'Operating Voltage': '24V DC / 230V AC',
+      'System Type': doc.categoryId?.categoryName || 'Automation Parts',
+      'Warranty': '12 Months Direct Manufacturer',
+    }
+  });
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      setLoading(true);
+      setApiFailed(false);
+      try {
+        if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
+          const response = await productService.getById(id);
+          if (response.success && response.data) {
+            setProduct(mapProduct(response.data));
+            
+            // Fetch related products
+            const relatedRes = await api.get(`/products/${id}/related`);
+            if (relatedRes.data?.success) {
+              setRelatedProductsList((relatedRes.data.data || []).map(mapProduct));
+            }
+          } else {
+            setApiFailed(true);
+          }
+        } else {
+          setApiFailed(true);
+        }
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+        setApiFailed(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProductDetails();
+  }, [id]);
+
+  const mockItem = mockProducts.find((p) => String(p.id) === String(id));
+  const activeProduct = product || mockItem;
+
+  // Re-sync active image when activeProduct changes
+  const [activeImage, setActiveImage] = useState('');
+  useEffect(() => {
+    if (activeProduct && activeProduct.images && activeProduct.images.length > 0) {
+      setActiveImage(activeProduct.images[0]);
+    }
+  }, [activeProduct]);
+
+  const [shareSuccess, setShareSuccess] = useState(false);
+
+  // Loading indicator rendering
+  if (loading) {
+    return (
+      <main className="w-full pt-32 pb-24 text-center">
+        <div className="max-w-md mx-auto px-4 space-y-4">
+          <div className="w-12 h-12 border-4 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Loading component technical details...</p>
+        </div>
+      </main>
+    );
+  }
 
   // If product is not found
-  if (!product) {
+  if (!activeProduct) {
     return (
       <main className="w-full pt-32 pb-24 text-center">
         <div className="max-w-md mx-auto px-4 space-y-6">
@@ -61,22 +147,12 @@ export default function ProductDetails() {
     brochureUrl,
     rating,
     specs,
-  } = product;
-
-  // Active image selector state
-  const [activeImage, setActiveImage] = useState(images[0]);
-  const [shareSuccess, setShareSuccess] = useState(false);
-
-  // Re-sync active image when id changes (navigating between products)
-  useEffect(() => {
-    setActiveImage(images[0]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [id, images]);
+  } = activeProduct;
 
   // Related products logic (same category or brand, excluding current ID)
-  const relatedProducts = mockProducts
-    .filter((p) => (p.category === category || p.brand === brand) && p.id !== product.id)
-    .slice(0, 3);
+  const finalRelatedProducts = relatedProductsList.length > 0
+    ? relatedProductsList
+    : mockProducts.filter((p) => (p.category === category || p.brand === brand) && String(p.id) !== String(activeProduct.id)).slice(0, 3);
 
   // Social Share generators
   const shareUrl = window.location.href;
@@ -323,14 +399,14 @@ export default function ProductDetails() {
           </div>
 
           {/* Related products horizontal section */}
-          {relatedProducts.length > 0 && (
+          {finalRelatedProducts.length > 0 && (
             <div className="mt-24 pt-16 border-t border-slate-100">
               <h2 className="font-display font-extrabold text-xl text-slate-950 mb-10">
                 Related Automation Systems
               </h2>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {relatedProducts.map((prod) => (
+                {finalRelatedProducts.map((prod) => (
                   <ProductCard key={prod.id} product={prod} />
                 ))}
               </div>

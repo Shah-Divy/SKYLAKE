@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.skylakeautomat
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // Crucial for cookie-based auth where applicable
+  withCredentials: false, // Crucial for cookie-based auth where applicable
   headers: {
     'Content-Type': 'application/json',
   },

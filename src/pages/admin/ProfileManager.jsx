@@ -1,38 +1,99 @@
-import React, { useState } from 'react';
-import { Building2, Save, FileText, CheckCircle, Award } from 'lucide-react';
-import { mockIntro } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { Building2, Save, FileText, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { companyProfileService } from '../../services/companyProfileService';
 
 export default function ProfileManager() {
-  const [title, setTitle] = useState(mockIntro.title);
-  const [subtitle, setSubtitle] = useState(mockIntro.subtitle);
-  const [paragraph1, setParagraph1] = useState(mockIntro.paragraph1);
-  const [paragraph2, setParagraph2] = useState(mockIntro.paragraph2);
-  const [imageUrl, setImageUrl] = useState(mockIntro.image);
-  
+  const [loading, setLoading] = useState(true);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSave = (e) => {
+  // Company Profile states
+  const [companyProfile, setCompanyProfile] = useState('');
+  const [mission, setMission] = useState('');
+  const [vision, setVision] = useState('');
+  const [achievements, setAchievements] = useState('');
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const response = await companyProfileService.get();
+      if (response.success && response.data) {
+        setCompanyProfile(response.data.companyProfile || '');
+        setMission(response.data.mission || '');
+        setVision(response.data.vision || '');
+        setAchievements(response.data.achievements || '');
+      } else {
+        setErrorMsg('Failed to fetch company profile.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('An error occurred while loading the corporate profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    setSuccessMsg('Saving profile parameters to systems memory...');
-    
-    setTimeout(() => {
-      setSuccessMsg('Company profile updated successfully!');
-      // Clear success notification
-      setTimeout(() => setSuccessMsg(''), 3000);
-    }, 1200);
+    if (!companyProfile.trim() || !mission.trim() || !vision.trim()) {
+      alert('Please fill out the Company Profile description, Mission, and Vision guidelines.');
+      return;
+    }
+
+    setSaveLoading(true);
+    setSuccessMsg('');
+    setErrorMsg('');
+
+    try {
+      const payload = {
+        companyProfile,
+        mission,
+        vision,
+        achievements,
+      };
+
+      const response = await companyProfileService.update(payload);
+      if (response.success) {
+        setSuccessMsg('Corporate company profile updated successfully!');
+        setTimeout(() => setSuccessMsg(''), 4000);
+      } else {
+        setErrorMsg(response.message || 'Failed to save profile changes.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('An error occurred while saving corporate identity settings.');
+    } finally {
+      setSaveLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6 text-xs max-w-4xl">
       
       {/* Header */}
-      <div>
-        <span className="text-[10px] font-bold text-brand-teal uppercase tracking-wider bg-brand-teal/10 px-2.5 py-1 rounded-md border border-brand-teal/20">
-          Corporate Identity
-        </span>
-        <h1 className="font-display font-extrabold text-2xl text-slate-900 mt-2 tracking-tight">
-          Company Profile Configuration
-        </h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-[10px] font-bold text-brand-teal uppercase tracking-wider bg-brand-teal/10 px-2.5 py-1 rounded-md border border-brand-teal/20">
+            Corporate Identity
+          </span>
+          <h1 className="font-display font-extrabold text-2xl text-slate-900 mt-2 tracking-tight">
+            Company Profile Configuration
+          </h1>
+        </div>
+        <button
+          onClick={fetchProfile}
+          disabled={loading}
+          className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-600 cursor-pointer shadow-sm disabled:opacity-50"
+          title="Reload Profile"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {successMsg && (
@@ -42,83 +103,101 @@ export default function ProfileManager() {
         </div>
       )}
 
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl font-bold flex items-center gap-2">
+          <AlertCircle className="w-4.5 h-4.5 text-red-500 shrink-0" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
       {/* Main Form container */}
-      <form onSubmit={handleSave} className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/50 shadow-sm space-y-6">
-        
-        <h3 className="font-display font-extrabold text-sm text-slate-950 flex items-center gap-1.5 pb-3 border-b border-slate-100">
-          <Building2 className="w-4.5 h-4.5 text-brand-teal" />
-          Intro Content Settings
-        </h3>
-
-        {/* Title */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Profile Header Title</label>
-          <input
-            type="text"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white"
-          />
+      {loading ? (
+        <div className="bg-white p-12 rounded-2xl border border-slate-200/50 shadow-sm text-center text-slate-400 font-semibold w-full">
+          <span className="inline-block border-2 border-slate-300 border-t-brand-teal w-6 h-6 rounded-full animate-spin mr-2 align-middle" />
+          Loading corporate profile settings...
         </div>
+      ) : (
+        <form onSubmit={handleSave} className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/50 shadow-sm space-y-6">
+          
+          <h3 className="font-display font-extrabold text-sm text-slate-950 flex items-center gap-1.5 pb-3 border-b border-slate-100">
+            <Building2 className="w-4.5 h-4.5 text-brand-teal" />
+            Intro Content Settings
+          </h3>
 
-        {/* Subtitle */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Focus Subtitle Tagline</label>
-          <input
-            type="text"
-            required
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white"
-          />
-        </div>
+          {/* Primary Profile description */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Primary Company Profile Description</label>
+            <textarea
+              rows={5}
+              required
+              value={companyProfile}
+              onChange={(e) => setCompanyProfile(e.target.value)}
+              className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+              placeholder="e.g. Skylake Industrial Automation is a leading system integration company..."
+            />
+          </div>
 
-        {/* Body Paragraph 1 */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Primary Description (Rich Text Editor Mockup)</label>
-          <textarea
-            rows={4}
-            required
-            value={paragraph1}
-            onChange={(e) => setParagraph1(e.target.value)}
-            className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none font-mono text-[11px]"
-          />
-        </div>
+          {/* Mission & Vision side-by-side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Corporate Mission Statement</label>
+              <textarea
+                rows={4}
+                required
+                value={mission}
+                onChange={(e) => setMission(e.target.value)}
+                className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+                placeholder="Mission of delivering robust controls solutions..."
+              />
+            </div>
 
-        {/* Body Paragraph 2 */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Secondary Details paragraph</label>
-          <textarea
-            rows={4}
-            required
-            value={paragraph2}
-            onChange={(e) => setParagraph2(e.target.value)}
-            className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none font-mono text-[11px]"
-          />
-        </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Corporate Vision Statement</label>
+              <textarea
+                rows={4}
+                required
+                value={vision}
+                onChange={(e) => setVision(e.target.value)}
+                className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+                placeholder="Vision for the future of factory systems automation..."
+              />
+            </div>
+          </div>
 
-        {/* Image link */}
-        <div>
-          <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Overview Showcase Image URL</label>
-          <input
-            type="text"
-            required
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none"
-          />
-        </div>
+          {/* Achievements */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Achievements &amp; Milestones (Optional)</label>
+            <textarea
+              rows={4}
+              value={achievements}
+              onChange={(e) => setAchievements(e.target.value)}
+              className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+              placeholder="e.g. Over 500+ successful installations, certified Siemens partners..."
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-colors flex items-center gap-1.5 cursor-pointer ml-auto"
-        >
-          <Save className="w-4 h-4 text-brand-teal" />
-          Save Profile Content
-        </button>
+          <div className="flex justify-end pt-4 border-t border-slate-100">
+            <button
+              type="submit"
+              disabled={saveLoading}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-75"
+            >
+              {saveLoading ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Saving Profile...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 text-brand-teal" />
+                  Save Profile Content
+                </>
+              )}
+            </button>
+          </div>
 
-      </form>
+        </form>
+      )}
 
     </div>
   );

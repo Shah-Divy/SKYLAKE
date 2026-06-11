@@ -4,6 +4,10 @@ import { Search, SlidersHorizontal, ChevronRight, X, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { mockProducts, mockCategories, mockBrands } from '../data/mockData';
+import { productService } from '../services/productService';
+import { categoryService } from '../services/categoryService';
+import { brandService } from '../services/brandService';
+import { getFileUrl } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
 export default function Products() {
@@ -17,6 +21,13 @@ export default function Products() {
   // Local state for search box
   const [searchText, setSearchText] = useState(activeSearch);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Dynamic state loaded from DB
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   // Sync search input when search param changes (e.g. from global search)
   useEffect(() => {
@@ -43,20 +54,101 @@ export default function Products() {
     setSearchText('');
   };
 
-  // Filter logic
-  const filteredProducts = mockProducts.filter((product) => {
+  // Map Product helper
+  const mapProduct = (doc) => ({
+    id: doc._id,
+    title: doc.productName,
+    model: doc.modelNumber,
+    brand: doc.brandId?.brandName || 'Generic',
+    category: doc.categoryId?.categoryName || 'General',
+    price: doc.price,
+    discountPrice: doc.discountedPrice !== null && doc.discountedPrice !== undefined ? doc.discountedPrice : doc.price,
+    shortDescription: doc.description ? (doc.description.length > 120 ? doc.description.substring(0, 120) + '...' : doc.description) : '',
+    images: doc.images?.map(img => getFileUrl(img)) || [],
+    rating: 4.7
+  });
+
+  const mapBrand = (b) => ({
+    id: b._id,
+    name: b.brandName,
+    logo: getFileUrl(b.logo),
+    description: b.description || '',
+    productsCount: b.productsCount || 85
+  });
+
+  // 1. Fetch categories and brands on mount
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const [catsRes, brandsRes] = await Promise.all([
+          categoryService.getAll(),
+          brandService.getAll()
+        ]);
+        if (catsRes.success) setCategories(catsRes.data || []);
+        if (brandsRes.success) setBrands(brandsRes.data || []);
+      } catch (err) {
+        console.error('Error loading filter options:', err);
+      }
+    };
+    loadFilters();
+  }, []);
+
+  // 2. Fetch products dynamically when filters or filter options change
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
+      setLoading(true);
+      try {
+        const params = { limit: 100 };
+        
+        if (activeCategory) {
+          const matchedCat = categories.find(c => c.categoryName === activeCategory);
+          if (matchedCat) {
+            params.categoryId = matchedCat._id;
+          }
+        }
+
+        if (activeBrand) {
+          const matchedBrand = brands.find(b => b.brandName.toLowerCase() === activeBrand.toLowerCase());
+          if (matchedBrand) {
+            params.brandId = matchedBrand._id;
+          }
+        }
+
+        if (activeSearch) {
+          params.search = activeSearch;
+        }
+
+        const response = await productService.getAll(params);
+        if (response.success && response.data) {
+          setProducts((response.data || []).map(mapProduct));
+          setHasLoadedFromDb(true);
+        }
+      } catch (err) {
+        console.error('Error fetching filtered products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (categories.length > 0 || brands.length > 0 || (!activeCategory && !activeBrand)) {
+      fetchFilteredProducts();
+    }
+  }, [activeCategory, activeBrand, activeSearch, categories, brands]);
+
+  // Fallback to static mock filter logic if database is completely empty and hasn't loaded anything
+  const mockFiltered = mockProducts.filter((product) => {
     const matchesCategory = activeCategory ? product.category === activeCategory : true;
     const matchesBrand = activeBrand ? product.brand.toLowerCase() === activeBrand.toLowerCase() : true;
-    
     const matchesSearch = activeSearch
       ? product.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        product.model.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        product.shortDescription.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        product.brand.toLowerCase().includes(activeSearch.toLowerCase())
+        product.model.toLowerCase().includes(activeSearch.toLowerCase())
       : true;
-
     return matchesCategory && matchesBrand && matchesSearch;
   });
+
+  const finalProducts = hasLoadedFromDb ? products : mockFiltered;
+  const activeCategoriesList = categories.length > 0 ? categories.map(c => c.categoryName) : mockCategories;
+  const activeBrandsList = brands.length > 0 ? brands.map(mapBrand) : mockBrands;
 
   return (
     <main className="w-full pt-20">
@@ -112,7 +204,7 @@ export default function Products() {
                   >
                     All Categories
                   </button>
-                  {mockCategories.map((cat) => (
+                  {activeCategoriesList.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => updateParams('category', cat)}
@@ -140,7 +232,7 @@ export default function Products() {
                   >
                     All Brands
                   </button>
-                  {mockBrands.map((b) => (
+                  {activeBrandsList.map((b) => (
                     <button
                       key={b.id}
                       onClick={() => updateParams('brand', b.name)}
@@ -189,7 +281,7 @@ export default function Products() {
                 {/* Info & Mobile Filter Trigger */}
                 <div className="flex items-center justify-between sm:justify-end gap-4">
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    Showing {filteredProducts.length} Results
+                    Showing {finalProducts.length} Results
                   </span>
                   
                   <button
@@ -230,9 +322,9 @@ export default function Products() {
               )}
 
               {/* Products Cards Grid */}
-              {filteredProducts.length > 0 ? (
+              {finalProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
+                  {finalProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
@@ -305,7 +397,7 @@ export default function Products() {
                     >
                       All Categories
                     </button>
-                    {mockCategories.map((cat) => (
+                    {activeCategoriesList.map((cat) => (
                       <button
                         key={cat}
                         onClick={() => { updateParams('category', cat); setMobileFiltersOpen(false); }}
@@ -329,7 +421,7 @@ export default function Products() {
                     >
                       All Brands
                     </button>
-                    {mockBrands.map((b) => (
+                    {activeBrandsList.map((b) => (
                       <button
                         key={b.id}
                         onClick={() => { updateParams('brand', b.name); setMobileFiltersOpen(false); }}

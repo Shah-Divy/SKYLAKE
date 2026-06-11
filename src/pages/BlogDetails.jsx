@@ -1,15 +1,62 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, ChevronLeft, ArrowRight, Info, BookOpen } from 'lucide-react';
 import { mockBlog } from '../data/mockData';
+import { blogService } from '../services/blogService';
+import { getFileUrl } from '../services/api';
 
 export default function BlogDetails() {
   const { id } = useParams();
-  const post = mockBlog.find((b) => b.id === parseInt(id));
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchBlog = async () => {
+      setLoading(true);
+      try {
+        const res = await blogService.getById(id);
+        if (res.success && res.data) {
+          const doc = res.data;
+          const mapped = {
+            id: doc._id,
+            title: doc.title,
+            date: doc.publishDate ? new Date(doc.publishDate).toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric'
+            }) : 'May 18, 2026',
+            readTime: '5 min read',
+            image: getFileUrl(doc.image),
+            category: doc.title ? (doc.title.toLowerCase().includes('opc') ? 'Industrial IoT' : 'Automation') : 'Automation',
+            content: doc.content,
+            excerpt: doc.content ? (doc.content.substring(0, 150) + '...') : ''
+          };
+          setPost(mapped);
+        } else {
+          // fallback to mock
+          const mockItem = mockBlog.find((b) => b.id === parseInt(id));
+          setPost(mockItem);
+        }
+      } catch (err) {
+        console.error('Error fetching blog:', err);
+        const mockItem = mockBlog.find((b) => b.id === parseInt(id));
+        setPost(mockItem);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlog();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
+
+  if (loading) {
+    return (
+      <main className="w-full pt-32 pb-24 text-center">
+        <div className="max-w-md mx-auto px-4 space-y-4">
+          <div className="w-12 h-12 border-4 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Loading blog...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!post) {
     return (

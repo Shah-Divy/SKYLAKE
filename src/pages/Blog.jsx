@@ -1,18 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { mockBlog } from '../data/mockData';
+import { blogService } from '../services/blogService';
+import { getFileUrl } from '../services/api';
+
+const getBlogCategory = (title) => {
+  const t = (title || '').toLowerCase();
+  if (t.includes('opc') || t.includes('iot')) return 'Industrial IoT';
+  if (t.includes('safety') || t.includes('torque') || t.includes('sto')) return 'Safety Systems';
+  if (t.includes('maintenance') || t.includes('predictive')) return 'Smart Manufacturing';
+  return 'Automation';
+};
+
+const mapBlogDoc = (doc) => ({
+  id: doc._id,
+  title: doc.title,
+  excerpt: doc.content ? (doc.content.substring(0, 150) + '...') : '',
+  category: getBlogCategory(doc.title),
+  date: doc.publishDate ? new Date(doc.publishDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : 'May 18, 2026',
+  readTime: '5 min read',
+  image: getFileUrl(doc.image),
+  content: doc.content
+});
 
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const res = await blogService.getAll();
+        if (res.success && res.data && res.data.length > 0) {
+          setBlogs(res.data.map(mapBlogDoc));
+        } else {
+          setBlogs(mockBlog);
+        }
+      } catch (err) {
+        console.error('Error fetching blogs from API:', err);
+        setBlogs(mockBlog);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
+
+  const activeBlogs = blogs.length > 0 ? blogs : mockBlog;
 
   // Extract unique categories from blog posts
-  const categories = ['All', ...new Set(mockBlog.map((b) => b.category))];
+  const categories = ['All', ...new Set(activeBlogs.map((b) => b.category))];
 
   const filteredBlogs = selectedCategory === 'All'
-    ? mockBlog
-    : mockBlog.filter((b) => b.category === selectedCategory);
+    ? activeBlogs
+    : activeBlogs.filter((b) => b.category === selectedCategory);
+
 
   return (
     <main className="w-full pt-20">

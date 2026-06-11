@@ -13,6 +13,15 @@ import {
   mockBrands,
 } from '../data/mockData';
 
+import { bannerService } from '../services/bannerService';
+import { companyProfileService } from '../services/companyProfileService';
+import { productService } from '../services/productService';
+import { galleryService } from '../services/galleryService';
+import { reviewService } from '../services/reviewService';
+import { jobService } from '../services/jobService';
+import { brandService } from '../services/brandService';
+import { getFileUrl } from '../services/api';
+
 import ProductCard from '../components/ProductCard';
 import Lightbox from '../components/Lightbox';
 import JobApplyModal from '../components/JobApplyModal';
@@ -30,24 +39,158 @@ export default function Home() {
   // Careers states
   const [selectedJob, setSelectedJob] = useState(null);
 
+  // Dynamic States
+  const [banners, setBanners] = useState([]);
+  const [intro, setIntro] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Data mapping helpers to conform Mongo schemas to existing JSX keys
+  const mapBanner = (b) => ({
+    id: b._id,
+    type: b.mediaType || 'image',
+    url: getFileUrl(b.mediaUrl),
+    title: b.title,
+    subtitle: b.mediaType === 'video' ? 'Precision Robotics & Advanced Control Systems' : 'Empowering smart manufacturing with state-of-the-art systems.',
+    primaryCTA: b.ctaText || 'View Products',
+    primaryLink: b.ctaUrl || '/products',
+    secondaryCTA: 'Contact Us',
+    secondaryLink: '/contact'
+  });
+
+  const mapIntro = (profile) => ({
+    title: 'Pioneering the Future of Automation & Control Engineering',
+    subtitle: profile.companyProfile || 'Since 2012, we have designed, programmed, and deployed cutting-edge industrial solutions.',
+    paragraph1: profile.mission || '',
+    paragraph2: profile.vision || '',
+    image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800',
+    stats: [
+      { label: 'Installed Systems', value: '1,200+' },
+      { label: 'Global Brands Offered', value: '15+' },
+      { label: 'Commissioned Engineers', value: '45+' },
+      { label: 'Uptime Reliability', value: '99.9%' }
+    ]
+  });
+
+  const mapProduct = (doc) => ({
+    id: doc._id,
+    title: doc.productName,
+    model: doc.modelNumber,
+    brand: doc.brandId?.brandName || 'Generic',
+    category: doc.categoryId?.categoryName || 'General',
+    price: doc.price,
+    discountPrice: doc.discountedPrice !== null && doc.discountedPrice !== undefined ? doc.discountedPrice : doc.price,
+    shortDescription: doc.description ? (doc.description.length > 120 ? doc.description.substring(0, 120) + '...' : doc.description) : '',
+    images: doc.images?.map(img => getFileUrl(img)) || [],
+    rating: 4.7
+  });
+
+  const mapTestimonial = (t) => ({
+    id: t._id,
+    name: t.customerName,
+    role: 'VP of Manufacturing',
+    company: t.companyName,
+    content: t.review,
+    image: getFileUrl(t.profileImage) || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'
+  });
+
+  const mapGallery = (g) => ({
+    id: g._id,
+    title: g.title,
+    category: 'Infrastructure',
+    image: getFileUrl(g.image)
+  });
+
+  const mapJob = (j) => ({
+    id: j._id,
+    title: j.title,
+    department: 'Engineering',
+    experience: j.experience,
+    location: j.location,
+    description: j.description,
+    requirements: [
+      'Proficiency in controls systems design and programming.',
+      'Willingness to travel for on-site commissioning.',
+      'Strong team collaboration skills.'
+    ]
+  });
+
+  const mapBrand = (b) => ({
+    id: b._id,
+    name: b.brandName,
+    logo: getFileUrl(b.logo)
+  });
+
+  useEffect(() => {
+    const loadHomeData = async () => {
+      try {
+        const [
+          bannersRes,
+          profileRes,
+          productsRes,
+          galleryRes,
+          reviewsRes,
+          jobsRes,
+          brandsRes
+        ] = await Promise.all([
+          bannerService.getAll(),
+          companyProfileService.get(),
+          productService.getAll({ page: 1, limit: 3 }),
+          galleryService.getAll(),
+          reviewService.getAll(),
+          jobService.getAll(),
+          brandService.getAll()
+        ]);
+
+        if (bannersRes.success) {
+          const activeBanners = (bannersRes.data || []).filter(b => b.status !== 'inactive');
+          setBanners(activeBanners.map(mapBanner));
+        }
+        if (profileRes.success && profileRes.data) setIntro(mapIntro(profileRes.data));
+        if (productsRes.success) setProducts((productsRes.data || []).map(mapProduct));
+        if (galleryRes.success) setGallery((galleryRes.data || []).map(mapGallery));
+        if (reviewsRes.success) setTestimonials((reviewsRes.data || []).map(mapTestimonial));
+        if (jobsRes.success) setJobs((jobsRes.data || []).map(mapJob));
+        if (brandsRes.success) setBrands((brandsRes.data || []).map(mapBrand));
+      } catch (error) {
+        console.error('Error loading home data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHomeData();
+  }, []);
+
+  const activeBanners = banners.length > 0 ? banners : mockBanners;
+  const activeIntro = intro || mockIntro;
+
   // Auto slide effect
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && activeBanners.length > 0) {
       slideInterval.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % mockBanners.length);
+        setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
       }, 6000);
     } else {
       clearInterval(slideInterval.current);
     }
     return () => clearInterval(slideInterval.current);
-  }, [isPlaying]);
+  }, [isPlaying, activeBanners]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % mockBanners.length);
+    if (activeBanners.length > 0) {
+      setCurrentSlide((prev) => (prev + 1) % activeBanners.length);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + mockBanners.length) % mockBanners.length);
+    if (activeBanners.length > 0) {
+      setCurrentSlide((prev) => (prev - 1 + activeBanners.length) % activeBanners.length);
+    }
   };
 
   return (
@@ -56,7 +199,7 @@ export default function Home() {
       {/* SECTION A: Hero Banner Slider */}
       <section className="relative h-[85vh] md:h-[90vh] bg-slate-950 overflow-hidden">
         <AnimatePresence mode="wait">
-          {mockBanners.map((slide, index) => {
+          {activeBanners.map((slide, index) => {
             if (index !== currentSlide) return null;
             return (
               <motion.div
@@ -174,7 +317,7 @@ export default function Home() {
           </button>
           
           <div className="flex gap-2">
-            {mockBanners.map((_, index) => (
+            {activeBanners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -202,21 +345,21 @@ export default function Home() {
                 Who We Are
               </span>
               <h2 className="font-display font-extrabold text-2xl md:text-4xl text-slate-900 tracking-tight leading-tight">
-                {mockIntro.title}
+                {activeIntro.title}
               </h2>
               <p className="text-sm font-bold text-slate-600 leading-relaxed">
-                {mockIntro.subtitle}
+                {activeIntro.subtitle}
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                {mockIntro.paragraph1}
+                {activeIntro.paragraph1}
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                {mockIntro.paragraph2}
+                {activeIntro.paragraph2}
               </p>
 
               {/* Stats highlights */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-slate-100">
-                {mockIntro.stats.map((stat, i) => (
+                {activeIntro.stats.map((stat, i) => (
                   <div key={i} className="space-y-1">
                     <div className="font-display font-extrabold text-xl md:text-2xl text-slate-900">
                       {stat.value}
@@ -234,7 +377,7 @@ export default function Home() {
               <div className="absolute -inset-4 bg-brand-teal/5 rounded-3xl -rotate-2" />
               <div className="relative bg-slate-950 rounded-3xl overflow-hidden shadow-xl aspect-video md:aspect-[4/3]">
                 <img
-                  src={mockIntro.image}
+                  src={activeIntro.image}
                   alt="Industrial Plant Automation"
                   className="w-full h-full object-cover"
                 />
@@ -269,7 +412,7 @@ export default function Home() {
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockProducts.slice(0, 3).map((prod) => (
+            {(products.length > 0 ? products : mockProducts.slice(0, 3)).map((prod) => (
               <ProductCard key={prod.id} product={prod} />
             ))}
           </div>
@@ -295,7 +438,7 @@ export default function Home() {
 
           {/* Masonry Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockGallery.map((item) => (
+            {(gallery.length > 0 ? gallery : mockGallery).map((item) => (
               <motion.div
                 key={item.id}
                 whileHover={{ y: -4 }}
@@ -344,7 +487,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {mockTestimonials.map((t) => (
+            {(testimonials.length > 0 ? testimonials : mockTestimonials).map((t) => (
               <div key={t.id} className="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-between shadow-sm">
                 <div>
                   <p className="text-xs text-slate-500 italic leading-relaxed mb-6">
@@ -388,7 +531,7 @@ export default function Home() {
 
           {/* Job listings */}
           <div className="max-w-4xl mx-auto space-y-6">
-            {mockJobs.map((job) => (
+            {(jobs.length > 0 ? jobs : mockJobs).map((job) => (
               <div
                 key={job.id}
                 className="bg-brand-slate-light p-6 rounded-2xl border border-slate-100 hover:border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 transition-colors"
@@ -440,7 +583,7 @@ export default function Home() {
 
           {/* Logo Slider / Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-8 items-center justify-items-center opacity-65 hover:opacity-100 transition-opacity duration-300">
-            {mockBrands.map((brand) => (
+            {(brands.length > 0 ? brands : mockBrands).map((brand) => (
               <Link key={brand.id} to="/partners" className="h-10 flex items-center justify-center filter grayscale hover:grayscale-0 transition-all duration-300">
                 <img
                   src={brand.logo}

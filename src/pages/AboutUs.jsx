@@ -1,18 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Target, Eye, ShieldCheck, Factory, Award, Users, CheckCircle, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { companyProfileService } from '../services/companyProfileService';
 
 export default function AboutUs() {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await companyProfileService.get();
+        if (response.success && response.data) {
+          setProfile(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching company profile:', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const coreValues = [
     {
       title: 'Our Mission',
-      desc: 'To deliver high-precision industrial automation systems and premium electronic components, enabling manufacturing operations to maximize cycle performance and ensure absolute operator safety.',
+      desc: profile?.mission || 'To deliver high-precision industrial automation systems and premium electronic components, enabling manufacturing operations to maximize cycle performance and ensure absolute operator safety.',
       icon: <Target className="w-6 h-6 text-brand-teal" />,
       bg: 'bg-brand-teal/5 border-brand-teal/15',
     },
     {
       title: 'Our Vision',
-      desc: 'To become India’s premier industrial automation provider and distributor, bridging the gap between legacy machinery and high-speed IIoT integrated smart factory architectures.',
+      desc: profile?.vision || 'To become India’s premier industrial automation provider and distributor, bridging the gap between legacy machinery and high-speed IIoT integrated smart factory architectures.',
       icon: <Eye className="w-6 h-6 text-brand-orange" />,
       bg: 'bg-brand-orange/5 border-brand-orange/15',
     },
@@ -65,10 +82,10 @@ export default function AboutUs() {
                 Engineering Custom Automation with Global Standards
               </h2>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Skylake Automation is a trusted partner for industrial manufacturing sites seeking efficiency, precision, and reliable machine safety. We operate as a full-service distributor and controls developer, providing the physical hardware, distributed I/O, software configurations, and live commissioning expertise required for smart factories.
+                {profile?.companyProfile || 'Skylake Automation is a trusted partner for industrial manufacturing sites seeking efficiency, precision, and reliable machine safety. We operate as a full-service distributor and controls developer, providing the physical hardware, distributed I/O, software configurations, and live commissioning expertise required for smart factories.'}
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Our approach bypasses typical vendor limitations. By leveraging our deep relationships with manufacturers like Rockwell, Siemens, and ABB, we procure parts directly to prevent markup and reduce lead times. Our team builds panels under strict IEC 61439 codes, ensuring they arrive fully simulated, debugged, and ready for power connections.
+                {profile?.achievements ? `Our Legacy: ${profile.achievements}` : 'Our approach bypasses typical vendor limitations. By leveraging our deep relationships with manufacturers like Rockwell, Siemens, and ABB, we procure parts directly to prevent markup and reduce lead times. Our team builds panels under strict IEC 61439 codes, ensuring they arrive fully simulated, debugged, and ready for power connections.'}
               </p>
 
               {/* Checklist details */}

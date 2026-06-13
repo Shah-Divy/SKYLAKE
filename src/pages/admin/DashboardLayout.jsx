@@ -44,21 +44,21 @@ export default function DashboardLayout() {
 
   // 15 Menu items
   const menuItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
-    { name: 'Banner Management', path: '/admin/dashboard/banners', icon: <Image className="w-5 h-5" />, end: false },
-    { name: 'Customer Reviews', path: '/admin/dashboard/reviews', icon: <MessageSquare className="w-5 h-5" /> },
-    { name: 'Gallery Management', path: '/admin/dashboard/gallery', icon: <Images className="w-5 h-5" /> },
-    { name: 'Job Openings', path: '/admin/dashboard/jobs', icon: <Briefcase className="w-5 h-5" /> },
-    { name: 'Company Profile', path: '/admin/dashboard/profile', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Policies', path: '/admin/dashboard/policies', icon: <Shield className="w-5 h-5" /> },
-    { name: 'Brands', path: '/admin/dashboard/brands', icon: <Award className="w-5 h-5" /> },
-    { name: 'Categories', path: '/admin/dashboard/categories', icon: <Layers className="w-5 h-5" /> },
-    { name: 'Products', path: '/admin/dashboard/products', icon: <Cpu className="w-5 h-5" /> },
-    { name: 'Latest News', path: '/admin/dashboard/news', icon: <Newspaper className="w-5 h-5" /> },
-    { name: 'Blogs', path: '/admin/dashboard/blogs', icon: <BookOpen className="w-5 h-5" /> },
-    { name: 'Downloads', path: '/admin/dashboard/downloads', icon: <Download className="w-5 h-5" /> },
-    { name: 'Inquiries', path: '/admin/dashboard/inquiries', icon: <Mail className="w-5 h-5" /> },
-    { name: 'Settings', path: '/admin/dashboard/settings', icon: <Settings className="w-5 h-5" /> }
+    { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard className="w-5 h-5" />, end: true },
+    { name: 'Banner Management', path: '/admin/banners', icon: <Image className="w-5 h-5" />, end: false },
+    { name: 'Customer Reviews', path: '/admin/reviews', icon: <MessageSquare className="w-5 h-5" /> },
+    { name: 'Gallery Management', path: '/admin/gallery', icon: <Images className="w-5 h-5" /> },
+    { name: 'Job Openings', path: '/admin/jobs', icon: <Briefcase className="w-5 h-5" /> },
+    { name: 'Company Profile', path: '/admin/profile', icon: <Building2 className="w-5 h-5" /> },
+    { name: 'Policies', path: '/admin/policies', icon: <Shield className="w-5 h-5" /> },
+    { name: 'Brands', path: '/admin/brands', icon: <Award className="w-5 h-5" /> },
+    { name: 'Categories', path: '/admin/categories', icon: <Layers className="w-5 h-5" /> },
+    { name: 'Products', path: '/admin/products', icon: <Cpu className="w-5 h-5" /> },
+    { name: 'Latest News', path: '/admin/news', icon: <Newspaper className="w-5 h-5" /> },
+    { name: 'Blogs', path: '/admin/blogs', icon: <BookOpen className="w-5 h-5" /> },
+    { name: 'Downloads', path: '/admin/downloads', icon: <Download className="w-5 h-5" /> },
+    { name: 'Inquiries', path: '/admin/inquiries', icon: <Mail className="w-5 h-5" /> },
+    { name: 'Settings', path: '/admin/settings', icon: <Settings className="w-5 h-5" /> }
   ];
 
   return (
@@ -72,7 +72,7 @@ export default function DashboardLayout() {
       >
         {/* Brand header */}
         <div className="h-20 flex items-center justify-between px-5 border-b border-slate-800 shrink-0">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
+          <Link to="/admin" className="flex items-center gap-2">
             <div className="bg-brand-teal p-1.5 rounded-lg text-slate-950 flex items-center justify-center shrink-0">
               <Cpu className="w-5 h-5 animate-pulse" />
             </div>
@@ -168,7 +168,7 @@ export default function DashboardLayout() {
           <div className="flex items-center gap-4">
             
             {/* Notifications panel dropdown */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="p-2 text-slate-400 hover:text-slate-600 rounded-xl relative hover:bg-slate-50 cursor-pointer"

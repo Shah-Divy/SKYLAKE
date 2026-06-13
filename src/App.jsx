@@ -95,7 +95,7 @@ function App() {
 
           {/* Admin Dashboard Protected Nested Paths */}
           <Route
-            path="/admin/dashboard"
+            path="/admin"
             element={
               <ProtectedRoute>
                 <DashboardLayout />

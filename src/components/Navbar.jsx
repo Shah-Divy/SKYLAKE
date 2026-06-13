@@ -168,12 +168,12 @@ export default function Navbar() {
                   </motion.form>
                 )}
               </AnimatePresence>
-              <button
+              {/* <button
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="p-2 rounded-lg transition-colors cursor-pointer text-slate-300 hover:text-white hover:bg-slate-800"
               >
                 <Search className="w-5 h-5" />
-              </button>
+              </button> */}
             </div>
 
             {/* Quick Contact Button */}

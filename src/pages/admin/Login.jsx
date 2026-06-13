@@ -42,7 +42,7 @@ export default function Login() {
     try {
       const result = await login(data.email, data.password);
       if (result.success) {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       } else {
         setErrorMsg(result.message || 'Invalid administrative credentials. Please verify email and password.');
       }

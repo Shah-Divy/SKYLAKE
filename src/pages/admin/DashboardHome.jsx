@@ -49,14 +49,14 @@ export default function DashboardHome() {
   
   // 8 Stats cards data matching prompt requirements
   const stats = [
-    { label: 'Total Products', value: data.products, icon: <Cpu className="w-5 h-5 text-indigo-500" />, color: 'indigo' },
-    { label: 'Total Brands', value: data.brands, icon: <Award className="w-5 h-5 text-amber-500" />, color: 'amber' },
-    { label: 'Total Categories', value: data.categories, icon: <Layers className="w-5 h-5 text-emerald-500" />, color: 'emerald' },
-    { label: 'Total Blogs', value: data.blogs, icon: <BookOpen className="w-5 h-5 text-pink-500" />, color: 'pink' },
-    { label: 'Total News', value: data.news, icon: <Newspaper className="w-5 h-5 text-blue-500" />, color: 'blue' },
-    { label: 'Total Downloads', value: data.downloads, icon: <Download className="w-5 h-5 text-teal-500" />, color: 'teal' },
-    { label: 'Total Inquiries', value: data.inquiries, icon: <Mail className="w-5 h-5 text-rose-500" />, color: 'rose' },
-    { label: 'Total Job Openings', value: data.jobOpenings, icon: <Briefcase className="w-5 h-5 text-orange-500" />, color: 'orange' }
+    { label: 'Total Products', value: data.total_products, icon: <Cpu className="w-5 h-5 text-indigo-500" />, color: 'indigo' },
+    { label: 'Total Brands', value: data.total_brands, icon: <Award className="w-5 h-5 text-amber-500" />, color: 'amber' },
+    { label: 'Total Categories', value: data.total_categories, icon: <Layers className="w-5 h-5 text-emerald-500" />, color: 'emerald' },
+    { label: 'Total Blogs', value: data.total_blogs, icon: <BookOpen className="w-5 h-5 text-pink-500" />, color: 'pink' },
+    { label: 'Total News', value: data.total_news, icon: <Newspaper className="w-5 h-5 text-blue-500" />, color: 'blue' },
+    { label: 'Total Downloads', value: data.total_downloads, icon: <Download className="w-5 h-5 text-teal-500" />, color: 'teal' },
+    { label: 'Total Inquiries', value: data.total_inquiries, icon: <Mail className="w-5 h-5 text-rose-500" />, color: 'rose' },
+    { label: 'Total Job Openings', value: data.total_job_openings, icon: <Briefcase className="w-5 h-5 text-orange-500" />, color: 'orange' }
   ];
 
   const recentActivities = [
@@ -83,7 +83,7 @@ export default function DashboardHome() {
         {/* Quick action buttons */}
         <div className="flex items-center gap-3">
           <Link
-            to="/admin/dashboard/products"
+            to="/admin/products"
             className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1 cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4 text-brand-teal" />
@@ -229,7 +229,7 @@ export default function DashboardHome() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
-            to="/admin/dashboard/banners"
+            to="/admin/banners"
             className="p-5 bg-white border border-slate-200/50 rounded-2xl shadow-sm hover:border-slate-300 transition-colors flex items-center justify-between group"
           >
             <div className="text-xs">
@@ -240,7 +240,7 @@ export default function DashboardHome() {
           </Link>
 
           <Link
-            to="/admin/dashboard/products"
+            to="/admin/products"
             className="p-5 bg-white border border-slate-200/50 rounded-2xl shadow-sm hover:border-slate-300 transition-colors flex items-center justify-between group"
           >
             <div className="text-xs">
@@ -251,7 +251,7 @@ export default function DashboardHome() {
           </Link>
 
           <Link
-            to="/admin/dashboard/inquiries"
+            to="/admin/inquiries"
             className="p-5 bg-white border border-slate-200/50 rounded-2xl shadow-sm hover:border-slate-300 transition-colors flex items-center justify-between group"
           >
             <div className="text-xs">
@@ -262,7 +262,7 @@ export default function DashboardHome() {
           </Link>
 
           <Link
-            to="/admin/dashboard/settings"
+            to="/admin/settings"
             className="p-5 bg-white border border-slate-200/50 rounded-2xl shadow-sm hover:border-slate-300 transition-colors flex items-center justify-between group"
           >
             <div className="text-xs">

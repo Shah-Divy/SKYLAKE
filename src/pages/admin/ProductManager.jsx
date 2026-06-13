@@ -5,6 +5,7 @@ import { productService } from '../../services/productService';
 import { brandService } from '../../services/brandService';
 import { categoryService } from '../../services/categoryService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function ProductManager() {
   const [products, setProducts] = useState([]);
@@ -177,35 +178,83 @@ export default function ProductManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('productName', formName);
-      formData.append('modelNumber', formModel);
-      formData.append('hsnCode', formHSN);
-      formData.append('price', formPrice);
-      if (formDiscPrice) {
-        formData.append('discountedPrice', formDiscPrice);
-      }
-      formData.append('brandId', formBrand);
-      formData.append('categoryId', formCat);
-      formData.append('description', formDesc);
-      formData.append('videoLink', formVideo);
-
-      // Append image files
-      if (formImages.length > 0) {
-        formImages.forEach((img) => {
-          formData.append('images', img); // Field name is 'images' (plural) in multer
-        });
-      }
-
-      // Append PDF manual file
-      if (formPdfFile) {
-        formData.append('pdfFile', formPdfFile); // Field name is 'pdfFile'
-      }
-
       let response;
       if (currentProduct) {
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('product_name', formName);
+        formData.append('model_number', formModel);
+        formData.append('hsn_code', formHSN);
+        formData.append('description', formDesc);
+        formData.append('price', formPrice);
+        if (formDiscPrice) {
+          formData.append('discounted_price', formDiscPrice);
+        }
+        formData.append('brand_id', formBrand);
+        formData.append('category_id', formCat);
+        formData.append('status', currentProduct.status === 'active' ? 1 : 0);
+
+        // Re-attach existing images as File objects so backend file validation passes
+        const existingImages = currentProduct.images || [];
+        for (let i = 0; i < existingImages.length; i++) {
+          try {
+            const imageUrl = getFileUrl(existingImages[i]);
+            const imgResponse = await fetch(imageUrl);
+            const blob = await imgResponse.blob();
+            const ext = existingImages[i].split('.').pop() || 'jpg';
+            const file = new File([blob], `image_${i}.${ext}`, { type: blob.type || 'image/jpeg' });
+            formData.append('images[]', file);
+          } catch (imgErr) {
+            console.warn('Could not fetch existing image:', existingImages[i], imgErr);
+          }
+        }
+
+        // Re-attach existing PDF file if present
+        const existingPdf = currentProduct.pdfFile || currentProduct.pdf_file;
+        if (existingPdf) {
+          try {
+            const pdfUrl = getFileUrl(existingPdf);
+            const pdfResponse = await fetch(pdfUrl);
+            const pdfBlob = await pdfResponse.blob();
+            const pdfFile = new File([pdfBlob], 'brochure.pdf', { type: 'application/pdf' });
+            formData.append('pdfFile', pdfFile);
+          } catch (pdfErr) {
+            console.warn('Could not fetch existing PDF:', existingPdf, pdfErr);
+          }
+        }
+
+        // Preserve video link
+        const existingVideo = currentProduct.videoLink || currentProduct.video_link || '';
+        if (existingVideo) {
+          formData.append('video_link', existingVideo);
+        }
+
         response = await productService.update(currentProduct._id, formData);
       } else {
+        const formData = new FormData();
+        formData.append('product_name', formName);
+        formData.append('model_number', formModel);
+        formData.append('hsn_code', formHSN);
+        formData.append('price', formPrice);
+        if (formDiscPrice) {
+          formData.append('discounted_price', formDiscPrice);
+        }
+        formData.append('brand_id', formBrand);
+        formData.append('category_id', formCat);
+        formData.append('description', formDesc);
+        formData.append('video_link', formVideo);
+        formData.append('status', '1');
+
+        if (formImages.length > 0) {
+          formImages.forEach((img) => {
+            formData.append('images[]', img);
+          });
+        }
+
+        if (formPdfFile) {
+          formData.append('pdf_file', formPdfFile);
+        }
+
         response = await productService.create(formData);
       }
 
@@ -249,11 +298,11 @@ export default function ProductManager() {
 
   const handleToggleStatus = async (product) => {
     try {
-      const response = await productService.toggleStatus(product._id);
+      const response = await productService.toggleStatus(product);
       if (response.success) {
         setProducts(
           products.map((p) =>
-            p._id === product._id ? { ...p, status: p.status === 'active' ? 'inactive' : 'active' } : p
+            p._id === product._id ? { ...p, status: p.status === 'active' ? 1 : 0 } : p
           )
         );
       }
@@ -376,7 +425,7 @@ export default function ProductManager() {
                   <tr key={p._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img src={p.images[0]} alt={p.productName} className="w-9 h-9 rounded-lg object-cover border" />
+                        <img src={getFileUrl(p.images[0])} alt={p.productName} className="w-9 h-9 rounded-lg object-cover border" />
                         <span className="font-bold text-slate-900">{p.productName}</span>
                       </div>
                     </td>
@@ -412,13 +461,13 @@ export default function ProductManager() {
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleOpenEdit(p)}
                           className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-200 cursor-pointer"
                           title="Edit Product"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDeleteClick(p._id)}
                           className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg border border-red-100 cursor-pointer"
@@ -488,7 +537,7 @@ export default function ProductManager() {
 
               {/* Tabs header */}
               <div className="flex border-b border-slate-200">
-                {['general', 'specs', 'media'].map((tab) => (
+                {['general', 'specs', currentProduct ? null : 'media'].filter(Boolean).map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -636,7 +685,7 @@ export default function ProductManager() {
                     {imagePreviews.length > 0 && (
                       <div className="flex gap-2 overflow-x-auto py-2">
                         {imagePreviews.map((url, i) => (
-                          <img key={i} src={url} className="w-16 h-16 object-cover border rounded-xl" alt="Preview" />
+                          <img key={i} src={getFileUrl(url)} className="w-16 h-16 object-cover border rounded-xl" alt="Preview" />
                         ))}
                       </div>
                     )}
@@ -728,7 +777,7 @@ export default function ProductManager() {
 
                 {/* Picture */}
                 <div className="relative pt-[60%] bg-slate-50 rounded-xl overflow-hidden border">
-                  <img src={currentProduct.images[0]} alt={currentProduct.productName} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={getFileUrl(currentProduct.images[0])} alt={currentProduct.productName} className="absolute inset-0 w-full h-full object-cover" />
                 </div>
 
                 {/* Brand Category metadata */}
@@ -770,7 +819,7 @@ export default function ProductManager() {
                     <div className="flex gap-2">
                       {currentProduct.pdfFile && (
                         <a
-                          href={currentProduct.pdfFile}
+                          href={getFileUrl(currentProduct.pdfFile)}
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center gap-1 text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-[10px] font-bold hover:bg-slate-100"
@@ -806,12 +855,12 @@ export default function ProductManager() {
 
               {/* Drawer footer actions */}
               <div className="pt-6 border-t border-slate-100 flex gap-4 mt-8">
-                <button
+                {/* <button
                   onClick={() => { setDrawerOpen(false); handleOpenEdit(currentProduct); }}
                   className="flex-grow py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 text-center cursor-pointer"
                 >
                   Edit Specifications
-                </button>
+                </button> */}
                 <button
                   onClick={() => handleDeleteClick(currentProduct._id)}
                   className="flex-grow py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold text-center cursor-pointer"

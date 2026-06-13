@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Calendar, Clock, AlertCircle, RefreshCw, Toggle
 import { motion, AnimatePresence } from 'framer-motion';
 import { blogService } from '../../services/blogService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function BlogManager() {
   const [blogs, setBlogs] = useState([]);
@@ -89,18 +90,24 @@ export default function BlogManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', formTitle);
-      formData.append('content', formContent);
-      formData.append('publishDate', formDate);
-      if (formFile) {
-        formData.append('image', formFile); // Field name is 'image' in multer config
-      }
-
       let response;
       if (currentBlog) {
-        response = await blogService.update(currentBlog._id, formData);
+        const payload = {
+          title: formTitle,
+          content: formContent,
+          publish_date: formDate.includes(' ') ? formDate : `${formDate} 00:00:00`,
+          status: currentBlog.status === 'active',
+        };
+        response = await blogService.update(currentBlog._id, payload);
       } else {
+        const formData = new FormData();
+        formData.append('title', formTitle);
+        formData.append('content', formContent);
+        formData.append('publish_date', formDate.includes(' ') ? formDate : `${formDate} 00:00:00`);
+        formData.append('status', '1');
+        if (formFile) {
+          formData.append('image', formFile); // Field name is 'image' in multer config
+        }
         response = await blogService.create(formData);
       }
 
@@ -229,7 +236,7 @@ export default function BlogManager() {
             >
               {/* Visual Screen */}
               <div className="relative pt-[56.25%] bg-slate-50 border-b overflow-hidden">
-                <img src={item.image} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={getFileUrl(item.image)} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
                 <button
                   onClick={() => handleToggleStatus(item)}
                   className={`absolute top-3 right-3 p-1.5 rounded-lg text-white font-extrabold text-[8px] uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-lg ${
@@ -340,22 +347,24 @@ export default function BlogManager() {
                 </div>
 
                 {/* Image file upload */}
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
-                    {currentBlog ? 'Replace Cover Image (Optional)' : 'Upload Cover Image (Required)'}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
-                  />
-                </div>
+                {!currentBlog && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
+                      Upload Cover Image (Required)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                    />
+                  </div>
+                )}
 
                 {/* Image Preview */}
                 {previewUrl && (
                   <div className="border border-slate-100 rounded-xl overflow-hidden bg-slate-50 relative pt-[40%]">
-                    <img src={previewUrl} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
+                    <img src={getFileUrl(previewUrl)} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
                   </div>
                 )}
 

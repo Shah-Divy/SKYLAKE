@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Award, Eye, AlertCircle, RefreshCw, ToggleLeft,
 import { motion, AnimatePresence } from 'framer-motion';
 import { brandService } from '../../services/brandService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function BrandManager() {
   const [brands, setBrands] = useState([]);
@@ -28,7 +29,7 @@ export default function BrandManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await brandService.getAll({ limit: 100 });
+      const response = await brandService.getAll({ limit: 100, isAdmin: true });
       if (response.success) {
         setBrands(response.data || []);
       } else {
@@ -86,17 +87,22 @@ export default function BrandManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('brandName', formName);
-      formData.append('description', formDesc);
-      if (formFile) {
-        formData.append('logo', formFile); // Field name is 'logo' in multer config
-      }
-
       let response;
       if (currentBrand) {
-        response = await brandService.update(currentBrand._id, formData);
+        const payload = {
+          brand_name: formName,
+          description: formDesc,
+          status: currentBrand.status === 'active',
+        };
+        response = await brandService.update(currentBrand._id, payload);
       } else {
+        const formData = new FormData();
+        formData.append('brand_name', formName);
+        formData.append('description', formDesc);
+        formData.append('status', '1');
+        if (formFile) {
+          formData.append('logo', formFile);
+        }
         response = await brandService.create(formData);
       }
 
@@ -141,7 +147,7 @@ export default function BrandManager() {
     try {
       // Note: We can implement status toggling if needed
       // brandService has toggleStatus, let's call it!
-      const response = await brandService.toggleStatus(brand._id);
+      const response = await brandService.toggleStatus(brand);
       if (response.success) {
         setBrands(
           brands.map((b) =>
@@ -228,7 +234,7 @@ export default function BrandManager() {
               <div className="space-y-4">
                 {/* Logo frame */}
                 <div className="h-14 bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-center overflow-hidden relative">
-                  <img src={b.logo} alt={b.brandName} className="max-h-full max-w-[120px] object-contain" />
+                  <img src={getFileUrl(b.logo)} alt={b.brandName} className="max-h-full max-w-[120px] object-contain" />
                 </div>
                 
                 <div className="space-y-1">
@@ -324,22 +330,24 @@ export default function BrandManager() {
                 </div>
 
                 {/* Logo file upload */}
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
-                    {currentBrand ? 'Replace Brand Logo File (Optional)' : 'Upload Brand Logo File (Required)'}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
-                  />
-                </div>
+                {!currentBrand && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
+                      Upload Brand Logo File (Required)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                    />
+                  </div>
+                )}
 
                 {/* Logo preview */}
                 {previewUrl && (
                   <div className="h-20 bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex items-center justify-center overflow-hidden">
-                    <img src={previewUrl} className="max-h-full object-contain" alt="Logo Preview" />
+                    <img src={getFileUrl(previewUrl)} className="max-h-full object-contain" alt="Logo Preview" />
                   </div>
                 )}
 

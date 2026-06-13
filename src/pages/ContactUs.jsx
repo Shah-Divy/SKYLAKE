@@ -126,7 +126,7 @@ export default function ContactUs() {
                   <div className="text-xs">
                     <div className="font-bold text-slate-900 mb-1">Corporate Headquarters</div>
                     <p className="text-slate-500 leading-relaxed font-medium">
-                      Plot 45, Automation Block, Phase-II, MIDC Industrial Area, Pune, Maharashtra 411018, India
+                      601-Kohinoor Bussiness Hub, Near Ranasan Toll Plaza, S P Ring Road, Naroda GIDC, Ahmedabad, Gujarat - 382330, India
                     </p>
                   </div>
                 </div>
@@ -315,18 +315,7 @@ export default function ContactUs() {
       </section>
 
       {/* Google Map Section */}
-      <section className="h-96 w-full bg-slate-200 border-t border-slate-100">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d121059.20668041539!2d73.79155711202863!3d18.52461642103525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bf2e67461101%3A0x828d43bf9d9ee543!2sPune%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1717015403233!5m2!1sen!2sin"
-          width="100%"
-          height="100%"
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          className="border-0"
-          title="Google Map location"
-        />
-      </section>
+      
 
     </main>
   );

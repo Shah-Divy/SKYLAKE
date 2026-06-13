@@ -3,6 +3,7 @@ import { Image as ImageIcon, Plus, Edit2, Trash2, X, AlertCircle, RefreshCw, Tog
 import { motion, AnimatePresence } from 'framer-motion';
 import { bannerService } from '../../services/bannerService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function BannerManager() {
   const [banners, setBanners] = useState([]);
@@ -97,20 +98,27 @@ export default function BannerManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', formTitle);
-      formData.append('mediaType', formMediaType);
-      formData.append('ctaText', formCTAText);
-      formData.append('ctaUrl', formCTAUrl);
-      formData.append('order', formOrder);
-      if (formFile) {
-        formData.append('image', formFile); // Field name is 'image' in multer config
-      }
-
       let response;
       if (currentBanner) {
-        response = await bannerService.update(currentBanner._id, formData);
+        const payload = {
+          title: formTitle,
+          cta_text: formCTAText || '',
+          cta_url: formCTAUrl || '',
+          order: parseInt(formOrder) || 0,
+          status: currentBanner.status === 'active',
+          media_type: currentBanner.mediaType || 'image',
+          media_url: currentBanner.mediaUrl || '',
+        };
+        response = await bannerService.update(currentBanner._id, payload);
       } else {
+        const formData = new FormData();
+        formData.append('title', formTitle);
+        formData.append('media_type', formMediaType);
+        formData.append('cta_text', formCTAText || '');
+        formData.append('cta_url', formCTAUrl || '');
+        formData.append('order', formOrder);
+        formData.append('status', '1');
+        formData.append('media_file', formFile);
         response = await bannerService.create(formData);
       }
 
@@ -154,7 +162,13 @@ export default function BannerManager() {
   const handleToggleStatus = async (banner) => {
     try {
       const response = await bannerService.toggleStatus(banner._id);
-      if (response.success) {
+      if (response.success && response.data) {
+        setBanners(
+          banners.map((b) =>
+            b._id === banner._id ? response.data : b
+          )
+        );
+      } else if (response.success) {
         setBanners(
           banners.map((b) =>
             b._id === banner._id ? { ...b, status: b.status === 'active' ? 'inactive' : 'active' } : b
@@ -240,9 +254,9 @@ export default function BannerManager() {
               {/* Visual Box */}
               <div className="relative pt-[45%] bg-slate-950 overflow-hidden shrink-0 border-b border-slate-100">
                 {banner.mediaType === 'video' ? (
-                  <video src={banner.mediaUrl} muted loop className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                  <video src={getFileUrl(banner.mediaUrl)} muted loop className="absolute inset-0 w-full h-full object-cover opacity-60" />
                 ) : (
-                  <img src={banner.mediaUrl} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <img src={getFileUrl(banner.mediaUrl)} alt={banner.title} className="absolute inset-0 w-full h-full object-cover" />
                 )}
                 <div className="absolute top-3 left-3 bg-slate-900/90 text-white text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md">
                   {banner.mediaType}
@@ -345,19 +359,21 @@ export default function BannerManager() {
 
                 {/* Media File Upload & Type */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Media Type</label>
-                    <select
-                      value={formMediaType}
-                      onChange={(e) => setFormMediaType(e.target.value)}
-                      className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none text-xs"
-                    >
-                      <option value="image">Image Format</option>
-                      <option value="video">Video Format</option>
-                    </select>
-                  </div>
+                  {!currentBanner && (
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Media Type</label>
+                      <select
+                        value={formMediaType}
+                        onChange={(e) => setFormMediaType(e.target.value)}
+                        className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                      >
+                        <option value="image">Image Format</option>
+                        <option value="video">Video Format</option>
+                      </select>
+                    </div>
+                  )}
 
-                  <div>
+                  <div className={currentBanner ? "col-span-2" : ""}>
                     <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Order Sequence</label>
                     <input
                       type="number"
@@ -370,25 +386,27 @@ export default function BannerManager() {
                 </div>
 
                 {/* File Upload Input */}
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
-                    {currentBanner ? 'Replace Banner File (Optional)' : 'Upload Banner File (Required)'}
-                  </label>
-                  <input
-                    type="file"
-                    accept={formMediaType === 'video' ? 'video/*' : 'image/*'}
-                    onChange={handleFileChange}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
-                  />
-                </div>
+                {!currentBanner && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
+                      Upload Banner File (Required)
+                    </label>
+                    <input
+                      type="file"
+                      accept={formMediaType === 'video' ? 'video/*' : 'image/*'}
+                      onChange={handleFileChange}
+                      className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                    />
+                  </div>
+                )}
 
                 {/* Preview Box */}
                 {previewUrl && (
                   <div className="border border-slate-100 rounded-xl overflow-hidden bg-slate-950 relative pt-[30%]">
                     {formMediaType === 'video' ? (
-                      <video src={previewUrl} muted controls className="absolute inset-0 w-full h-full object-cover" />
+                      <video src={getFileUrl(previewUrl)} muted controls className="absolute inset-0 w-full h-full object-cover" />
                     ) : (
-                      <img src={previewUrl} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
+                      <img src={getFileUrl(previewUrl)} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
                     )}
                   </div>
                 )}

@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Star, AlertCircle, RefreshCw, ToggleLeft, Toggl
 import { motion, AnimatePresence } from 'framer-motion';
 import { reviewService } from '../../services/reviewService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function ReviewManager() {
   const [reviews, setReviews] = useState([]);
@@ -83,19 +84,38 @@ export default function ReviewManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('customerName', formName);
-      formData.append('companyName', formCompany);
-      formData.append('review', formContent);
-      formData.append('rating', formRating);
-      if (formFile) {
-        formData.append('profileImage', formFile); // Field name is 'profileImage' in multer config
-      }
-
       let response;
       if (currentReview) {
-        response = await reviewService.update(currentReview._id, formData);
+        if (formFile) {
+          const formData = new FormData();
+          formData.append('customer_name', formName);
+          formData.append('company_name', formCompany);
+          formData.append('review', formContent);
+          formData.append('rating', formRating);
+          formData.append('status', currentReview.status === 'active' ? '1' : '0');
+          formData.append('profile_image', formFile);
+          formData.append('_method', 'PUT'); // Method spoofing for Laravel file uploads in PUT
+          response = await reviewService.update(currentReview._id, formData);
+        } else {
+          const payload = {
+            customer_name: formName,
+            company_name: formCompany,
+            review: formContent,
+            rating: parseInt(formRating) || 5,
+            status: currentReview.status === 'active'
+          };
+          response = await reviewService.updateJson(currentReview._id, payload);
+        }
       } else {
+        const formData = new FormData();
+        formData.append('customer_name', formName);
+        formData.append('company_name', formCompany);
+        formData.append('review', formContent);
+        formData.append('rating', formRating);
+        formData.append('status', '0'); // default status is inactive
+        if (formFile) {
+          formData.append('profile_image', formFile);
+        }
         response = await reviewService.create(formData);
       }
 
@@ -157,9 +177,9 @@ export default function ReviewManager() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-bold text-brand-teal uppercase tracking-wider bg-brand-teal/10 px-2.5 py-1 rounded-md border border-brand-teal/20">
+          {/* <span className="text-[10px] font-bold text-brand-teal uppercase tracking-wider bg-brand-teal/10 px-2.5 py-1 rounded-md border border-brand-teal/20">
             Social Proof
-          </span>
+          </span> */}
           <h1 className="font-display font-extrabold text-2xl text-slate-900 mt-2 tracking-tight">
             Client Testimonials & Reviews
           </h1>
@@ -251,13 +271,13 @@ export default function ReviewManager() {
                 <div className="flex items-center gap-3">
                   {rev.profileImage ? (
                     <img
-                      src={rev.profileImage}
+                      src={getFileUrl(rev.profileImage)}
                       alt={rev.customerName}
                       className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold font-display border border-slate-200 shadow-sm uppercase">
-                      {rev.customerName.charAt(0)}
+                      {rev.customerName?.charAt(0) || 'C'}
                     </div>
                   )}
                   <div>
@@ -382,7 +402,7 @@ export default function ReviewManager() {
                 {/* Avatar preview */}
                 {previewUrl && (
                   <div className="h-16 flex items-center justify-start gap-4">
-                    <img src={previewUrl} className="w-14 h-14 object-cover rounded-full border border-slate-200 shadow-sm" alt="Avatar Preview" />
+                    <img src={getFileUrl(previewUrl)} className="w-14 h-14 object-cover rounded-full border border-slate-200 shadow-sm" alt="Avatar Preview" />
                     <span className="text-[10px] text-slate-400 font-bold">Image loaded successfully</span>
                   </div>
                 )}

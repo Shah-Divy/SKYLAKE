@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { mockBlog } from '../data/mockData';
+// Use API only — no static mock fallback
 import { blogService } from '../services/blogService';
 import { getFileUrl } from '../services/api';
 
@@ -14,10 +14,16 @@ const getBlogCategory = (title) => {
   return 'Automation';
 };
 
+const firstWords = (text = '', n = 15) => {
+  const words = String(text).trim().split(/\s+/).filter(Boolean);
+  if (words.length <= n) return words.join(' ');
+  return words.slice(0, n).join(' ') + ' ....';
+};
+
 const mapBlogDoc = (doc) => ({
   id: doc._id,
   title: doc.title,
-  excerpt: doc.content ? (doc.content.substring(0, 150) + '...') : '',
+  excerpt: firstWords(doc.content, 15),
   category: getBlogCategory(doc.title),
   date: doc.publishDate ? new Date(doc.publishDate).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -30,7 +36,7 @@ const mapBlogDoc = (doc) => ({
 });
 
 export default function Blog() {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  // No category filters — API-only listing
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,14 +45,14 @@ export default function Blog() {
       setLoading(true);
       try {
         const res = await blogService.getAll();
-        if (res.success && res.data && res.data.length > 0) {
+        if (res.success && Array.isArray(res.data)) {
           setBlogs(res.data.map(mapBlogDoc));
         } else {
-          setBlogs(mockBlog);
+          setBlogs([]);
         }
       } catch (err) {
         console.error('Error fetching blogs from API:', err);
-        setBlogs(mockBlog);
+        setBlogs([]);
       } finally {
         setLoading(false);
       }
@@ -54,14 +60,7 @@ export default function Blog() {
     fetchBlogs();
   }, []);
 
-  const activeBlogs = blogs.length > 0 ? blogs : mockBlog;
-
-  // Extract unique categories from blog posts
-  const categories = ['All', ...new Set(activeBlogs.map((b) => b.category))];
-
-  const filteredBlogs = selectedCategory === 'All'
-    ? activeBlogs
-    : activeBlogs.filter((b) => b.category === selectedCategory);
+  const activeBlogs = blogs;
 
 
   return (
@@ -83,26 +82,11 @@ export default function Blog() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Category Pill Filters */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-16">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-slate-950 text-white border-slate-950 shadow-md'
-                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          {/* Blog listing — API-only */}
 
           {/* Blogs Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredBlogs.map((post) => (
+            {activeBlogs.map((post) => (
               <motion.article
                 key={post.id}
                 whileHover={{ y: -5 }}

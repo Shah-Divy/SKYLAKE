@@ -133,7 +133,7 @@ export default function ProfileManager() {
               value={companyProfile}
               onChange={(e) => setCompanyProfile(e.target.value)}
               className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
-              placeholder="e.g. Skylake Industrial Automation is a leading system integration company..."
+              placeholder="e.g. 3ARK Industrial Automation is a leading system integration company..."
             />
           </div>
 

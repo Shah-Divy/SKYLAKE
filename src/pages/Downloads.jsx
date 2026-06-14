@@ -1,19 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, FileText, Settings, Award, ShieldAlert, ExternalLink, HardDrive } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { mockDownloads } from '../data/mockData';
+import { downloadService } from '../services/downloadService';
+import { getFileUrl } from '../services/api';
 
 export default function Downloads() {
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [downloadCounts, setDownloadCounts] = useState(
-    mockDownloads.reduce((acc, curr) => ({ ...acc, [curr.id]: Math.floor(Math.random() * 300) + 140 }), {})
-  );
-
-  const categories = ['All', 'Brochures', 'Manuals', 'Software', 'Certificates'];
-
-  const filteredDownloads = activeCategory === 'All'
-    ? mockDownloads
-    : mockDownloads.filter((d) => d.category === activeCategory);
+  const [downloads, setDownloads] = useState([]);
+  const [downloadCounts, setDownloadCounts] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const getIcon = (cat) => {
     switch (cat) {
@@ -30,16 +24,42 @@ export default function Downloads() {
     }
   };
 
-  const handleDownloadTrigger = (id) => {
-    // Simulate incrementing downloads
-    setDownloadCounts((prev) => ({
-      ...prev,
-      [id]: prev[id] + 1,
-    }));
-    
-    // Alert or dispatch a mock file alert
-    alert('Simulating direct file download block...');
+  const handleDownloadTrigger = (item) => {
+    // Open zip file in new tab and increment local counter
+    const url = item.zip_file || item.zipFile || getFileUrl(item.zip_file || item.zipFile || '');
+    if (url) window.open(url, '_blank');
+    setDownloadCounts((prev) => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }));
   };
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const res = await downloadService.getAll();
+        if (res.success && Array.isArray(res.data)) {
+          const mapped = res.data.map((d) => ({
+            id: d.id || d._id,
+            title: d.title,
+            zip_file: d.zip_file || d.zipFile || '',
+            description: d.description || '',
+            video_link: d.video_link || d.videoLink || '',
+          }));
+          setDownloads(mapped);
+          const counts = {};
+          mapped.forEach((m) => { counts[m.id] = 0; });
+          setDownloadCounts(counts);
+        } else {
+          setDownloads([]);
+        }
+      } catch (err) {
+        console.error('Error fetching downloads:', err);
+        setDownloads([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
 
   return (
     <main className="w-full pt-20">
@@ -60,27 +80,15 @@ export default function Downloads() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Category Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-16">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                  activeCategory === cat
-                    ? 'bg-slate-950 text-white border-slate-950 shadow-md'
-                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
           {/* Cards Grid */}
-          {filteredDownloads.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="w-12 h-12 border-4 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-slate-500 mt-4">Loading downloads...</p>
+            </div>
+          ) : downloads.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDownloads.map((item) => (
+              {downloads.map((item) => (
                 <motion.div
                   key={item.id}
                   whileHover={{ y: -4 }}
@@ -105,24 +113,35 @@ export default function Downloads() {
                       <p className="text-xs text-slate-500 leading-relaxed font-medium">
                         {item.description}
                       </p>
+                      {item.video_link && (
+                        <a
+                          href={item.video_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-brand-teal font-semibold hover:underline mt-2"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Watch Video
+                        </a>
+                      )}
                     </div>
                   </div>
 
                   {/* Actions & File details */}
-                  <div className="mt-8 pt-4 border-t border-slate-100/60 flex items-center justify-between">
-                    <div className="flex flex-col text-[10px] text-slate-400 font-semibold">
-                      <span>Size: {item.fileSize}</span>
-                      <span className="text-slate-400/80">Downloaded {downloadCounts[item.id]} times</span>
-                    </div>
+                    <div className="mt-8 pt-4 border-t border-slate-100/60 flex items-center justify-between">
+                      {/* <div className="flex flex-col text-[10px] text-slate-400 font-semibold">
+                         <span>Size: —</span>
+                        <span className="text-slate-400/80">Downloaded {downloadCounts[item.id] || 0} times</span>
+                      </div> */}
 
-                    <button
-                      onClick={() => handleDownloadTrigger(item.id)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Get File
-                    </button>
-                  </div>
+                      <button
+                        onClick={() => handleDownloadTrigger(item)}
+                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Get File
+                      </button>
+                    </div>
                 </motion.div>
               ))}
             </div>
@@ -133,7 +152,7 @@ export default function Downloads() {
                 No Downloads Available
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                We couldn't find items matching "{activeCategory}". Feel free to browse brochures or manuals.
+                We couldn't find any downloads.
               </p>
             </div>
           )}

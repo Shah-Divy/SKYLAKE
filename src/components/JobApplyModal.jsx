@@ -112,7 +112,7 @@ export default function JobApplyModal({ job, onClose }) {
             <div>
               <div className="mb-6">
                 <span className="text-[10px] font-bold text-brand-teal uppercase tracking-widest bg-brand-teal/10 px-2.5 py-1 rounded-md">
-                  Careers at Skylake
+                  Careers at 3ARK
                 </span>
                 <h3 className="font-display font-extrabold text-xl text-slate-900 mt-2">
                   Apply for Position

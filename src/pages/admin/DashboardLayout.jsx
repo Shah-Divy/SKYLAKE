@@ -79,7 +79,7 @@ export default function DashboardLayout() {
             {!sidebarCollapsed && (
               <div className="flex flex-col">
                 <span className="font-display font-extrabold text-sm tracking-tight text-white leading-none">
-                  SKYLAKE
+                  3ARK
                 </span>
                 <span className="text-[8px] tracking-wider font-semibold text-brand-teal uppercase mt-0.5">
                   ADMIN PANEL
@@ -280,7 +280,7 @@ export default function DashboardLayout() {
                     <Cpu className="w-5 h-5" />
                   </div>
                   <span className="font-display font-extrabold text-sm tracking-tight text-white leading-none">
-                    SKYLAKE ADMIN
+                    3ARK ADMIN
                   </span>
                 </div>
                 

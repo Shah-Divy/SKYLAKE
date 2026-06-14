@@ -14,7 +14,7 @@ import {
   PhoneCall,
   Info
 } from 'lucide-react';
-import { mockProducts } from '../data/mockData';
+// removed mockProducts fallback — use API only
 import { productService } from '../services/productService';
 import { getFileUrl } from '../services/api';
 import api from '../services/api';
@@ -28,26 +28,26 @@ export default function ProductDetails() {
   const [apiFailed, setApiFailed] = useState(false);
 
   const mapProduct = (doc) => ({
-    id: doc._id,
-    title: doc.productName,
-    model: doc.modelNumber,
-    hsnCode: doc.hsnCode || '',
-    brand: doc.brandId?.brandName || 'Generic',
-    category: doc.categoryId?.categoryName || 'General',
-    price: doc.price,
-    discountPrice: doc.discountedPrice !== null && doc.discountedPrice !== undefined ? doc.discountedPrice : doc.price,
+    id: doc._id || doc.id,
+    title: doc.productName || doc.product_name,
+    model: doc.modelNumber || doc.model_number,
+    hsnCode: doc.hsnCode || doc.hsn_code || '',
+    brand: doc.brand?.brand_name || doc.brandId?.brandName || 'Generic',
+    category: doc.category?.category_name || doc.categoryId?.categoryName || 'General',
+    price: (doc.price !== undefined && doc.price !== null) ? parseFloat(doc.price) : undefined,
+    discountPrice: (doc.discountedPrice !== undefined && doc.discountedPrice !== null) ? doc.discountedPrice : (doc.discounted_price || doc.price),
     shortDescription: doc.description ? (doc.description.substring(0, 150) + '...') : '',
     description: doc.description,
-    images: doc.images?.map(img => getFileUrl(img)) || [],
-    videoEmbed: doc.videoLink || '',
-    brochureUrl: doc.pdfFile ? getFileUrl(doc.pdfFile) : '',
+    images: (doc.images || []).map((img) => (typeof img === 'string' && img.startsWith('http') ? img : getFileUrl(img))),
+    videoEmbed: doc.videoLink || doc.video_link || '',
+    brochureUrl: doc.pdfFile ? (typeof doc.pdfFile === 'string' && doc.pdfFile.startsWith('http') ? doc.pdfFile : getFileUrl(doc.pdfFile)) : (doc.pdf_file || ''),
     rating: 4.7,
     specs: {
       'Model Number': doc.modelNumber,
       'HSN Code': doc.hsnCode || '85371010',
-      'Operating Voltage': '24V DC / 230V AC',
+      // 'Operating Voltage': '24V DC / 230V AC',
       'System Type': doc.categoryId?.categoryName || 'Automation Parts',
-      'Warranty': '12 Months Direct Manufacturer',
+      // 'Warranty': '12 Months Direct Manufacturer',
     }
   });
 
@@ -56,18 +56,18 @@ export default function ProductDetails() {
       setLoading(true);
       setApiFailed(false);
       try {
-        if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
-          const response = await productService.getById(id);
-          if (response.success && response.data) {
-            setProduct(mapProduct(response.data));
-            
-            // Fetch related products
+        const response = await productService.getById(id);
+        if (response && response.success && response.data) {
+          setProduct(mapProduct(response.data));
+          // Fetch related products (API may return related list)
+          try {
             const relatedRes = await api.get(`/products/${id}/related`);
-            if (relatedRes.data?.success) {
+            if (relatedRes.data?.success && Array.isArray(relatedRes.data.data)) {
               setRelatedProductsList((relatedRes.data.data || []).map(mapProduct));
             }
-          } else {
-            setApiFailed(true);
+          } catch (err) {
+            // ignore related fetch errors
+            console.warn('Related products fetch failed', err);
           }
         } else {
           setApiFailed(true);
@@ -82,8 +82,7 @@ export default function ProductDetails() {
     fetchProductDetails();
   }, [id]);
 
-  const mockItem = mockProducts.find((p) => String(p.id) === String(id));
-  const activeProduct = product || mockItem;
+  const activeProduct = product;
 
   // Re-sync active image when activeProduct changes
   const [activeImage, setActiveImage] = useState('');
@@ -150,13 +149,11 @@ export default function ProductDetails() {
   } = activeProduct;
 
   // Related products logic (same category or brand, excluding current ID)
-  const finalRelatedProducts = relatedProductsList.length > 0
-    ? relatedProductsList
-    : mockProducts.filter((p) => (p.category === category || p.brand === brand) && String(p.id) !== String(activeProduct.id)).slice(0, 3);
+  const finalRelatedProducts = relatedProductsList;
 
   // Social Share generators
   const shareUrl = window.location.href;
-  const shareTitle = `Skylake Automation - Check out the ${title} (Model: ${model})`;
+  const shareTitle = `3ARK - Check out the ${title} (Model: ${model})`;
 
   const shareLinks = [
     { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4" />, url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` },
@@ -307,7 +304,7 @@ export default function ProductDetails() {
               </div>
 
               {/* Social Share Buttons */}
-              <div className="pt-6 border-t border-slate-100 space-y-3">
+              {/* <div className="pt-6 border-t border-slate-100 space-y-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Share2 className="w-3.5 h-3.5 text-slate-400" />
                   Share Component Details
@@ -333,7 +330,7 @@ export default function ProductDetails() {
                     {shareSuccess ? 'Link Copied!' : 'Copy Page Link'}
                   </button>
                 </div>
-              </div>
+              </div> */}
 
             </div>
 
@@ -353,21 +350,15 @@ export default function ProductDetails() {
               
               {/* Product video section */}
               {videoEmbed && (
-                <div className="pt-6">
-                  <h4 className="font-display font-bold text-sm text-slate-900 mb-3 flex items-center gap-1.5">
-                    <Play className="w-4 h-4 text-brand-teal fill-brand-teal" />
-                    Product Setup / Application Video
-                  </h4>
-                  <div className="relative pt-[56.25%] bg-slate-950 rounded-2xl overflow-hidden border border-slate-100 shadow-md">
-                    <iframe
-                      src={videoEmbed}
-                      title="Product Video Embed"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 w-full h-full border-0"
-                    />
-                  </div>
-                </div>
+                <a
+                  href={videoEmbed}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-brand-teal font-semibold hover:underline mt-2"
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  Watch Product Overview Video
+                </a>
               )}
             </div>
 

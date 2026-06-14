@@ -146,7 +146,7 @@ export default function InquiryManager() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Client Name</th>
-                  <th className="px-6 py-4">Subject</th>
+                  {/* <th className="px-6 py-4">Subject</th> */}
                   <th className="px-6 py-4">Email Address</th>
                   <th className="px-6 py-4">Phone Number</th>
                   <th className="px-6 py-4">Inquiry Date</th>
@@ -157,7 +157,7 @@ export default function InquiryManager() {
                 {inquiries.map((inq) => (
                   <tr key={inq._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-bold text-slate-900">{inq.name}</td>
-                    <td className="px-6 py-4 text-slate-700 font-semibold truncate max-w-[150px]">{inq.subject || 'N/A'}</td>
+                    {/* <td className="px-6 py-4 text-slate-700 font-semibold truncate max-w-[150px]">{inq.subject || 'N/A'}</td> */}
                     <td className="px-6 py-4 font-semibold text-slate-600">{inq.email}</td>
                     <td className="px-6 py-4 text-slate-500 font-medium font-mono">{inq.phone}</td>
                     <td className="px-6 py-4 font-mono font-medium text-slate-600">

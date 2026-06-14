@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, SlidersHorizontal, ChevronRight, X, Cpu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { mockProducts, mockCategories, mockBrands } from '../data/mockData';
+// removed static mockData imports; products/categories/brands are loaded from API
 import { productService } from '../services/productService';
 import { categoryService } from '../services/categoryService';
 import { brandService } from '../services/brandService';
@@ -27,7 +27,6 @@ export default function Products() {
   const [brands, setBrands] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [hasLoadedFromDb, setHasLoadedFromDb] = useState(false);
 
   // Sync search input when search param changes (e.g. from global search)
   useEffect(() => {
@@ -56,15 +55,15 @@ export default function Products() {
 
   // Map Product helper
   const mapProduct = (doc) => ({
-    id: doc._id,
-    title: doc.productName,
-    model: doc.modelNumber,
-    brand: doc.brandId?.brandName || 'Generic',
-    category: doc.categoryId?.categoryName || 'General',
-    price: doc.price,
-    discountPrice: doc.discountedPrice !== null && doc.discountedPrice !== undefined ? doc.discountedPrice : doc.price,
+    id: doc._id || doc.id,
+    title: doc.productName || doc.product_name,
+    model: doc.modelNumber || doc.model_number,
+    brand: doc.brandId?.brandName || doc.brand?.brand_name || 'Generic',
+    category: doc.categoryId?.categoryName || doc.category?.category_name || 'General',
+    price: doc.price || doc.price,
+    discountPrice: (doc.discountedPrice !== null && doc.discountedPrice !== undefined) ? doc.discountedPrice : (doc.discounted_price || doc.price),
     shortDescription: doc.description ? (doc.description.length > 120 ? doc.description.substring(0, 120) + '...' : doc.description) : '',
-    images: doc.images?.map(img => getFileUrl(img)) || [],
+    images: (doc.images || []).map((img) => (typeof img === 'string' && img.startsWith('http') ? img : getFileUrl(img))),
     rating: 4.7
   });
 
@@ -121,7 +120,6 @@ export default function Products() {
         const response = await productService.getAll(params);
         if (response.success && response.data) {
           setProducts((response.data || []).map(mapProduct));
-          setHasLoadedFromDb(true);
         }
       } catch (err) {
         console.error('Error fetching filtered products:', err);
@@ -135,20 +133,9 @@ export default function Products() {
     }
   }, [activeCategory, activeBrand, activeSearch, categories, brands]);
 
-  // Fallback to static mock filter logic if database is completely empty and hasn't loaded anything
-  const mockFiltered = mockProducts.filter((product) => {
-    const matchesCategory = activeCategory ? product.category === activeCategory : true;
-    const matchesBrand = activeBrand ? product.brand.toLowerCase() === activeBrand.toLowerCase() : true;
-    const matchesSearch = activeSearch
-      ? product.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
-        product.model.toLowerCase().includes(activeSearch.toLowerCase())
-      : true;
-    return matchesCategory && matchesBrand && matchesSearch;
-  });
-
-  const finalProducts = hasLoadedFromDb ? products : mockFiltered;
-  const activeCategoriesList = categories.length > 0 ? categories.map(c => c.categoryName) : mockCategories;
-  const activeBrandsList = brands.length > 0 ? brands.map(mapBrand) : mockBrands;
+  const finalProducts = products;
+  const activeCategoriesList = categories.length > 0 ? categories.map((c) => c.categoryName) : [];
+  const activeBrandsList = brands.length > 0 ? brands.map(mapBrand) : [];
 
   return (
     <main className="w-full pt-20">

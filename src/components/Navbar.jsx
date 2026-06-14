@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, Cpu, ChevronDown, Search, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockCategories } from '../data/mockData';
+import { categoryService } from '../services/categoryService';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -22,6 +23,20 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await categoryService.getAll();
+        if (res && res.success && Array.isArray(res.data)) {
+          setCategoriesList(res.data.map((c) => c.categoryName || c.category_name));
+        }
+      } catch (err) {
+        console.error('Error loading categories for navbar:', err);
+      }
+    };
+    loadCategories();
   }, []);
 
   const handleSearchSubmit = (e) => {
@@ -63,11 +78,11 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col">
               <span className="font-display font-extrabold text-xl tracking-tight leading-none text-white">
-                SKYLAKE
+                3ARK
               </span>
-              <span className="text-[10px] tracking-widest font-semibold text-brand-teal uppercase mt-0.5">
+              {/* <span className="text-[10px] tracking-widest font-semibold text-brand-teal uppercase mt-0.5">
                 AUTOMATION
-              </span>
+              </span> */}
             </div>
           </Link>
 
@@ -118,7 +133,7 @@ export default function Navbar() {
                           Product Range
                         </div>
                         <div className="mt-2 space-y-1">
-                          {mockCategories.map((cat) => (
+                          {categoriesList.map((cat) => (
                             <Link
                               key={cat}
                               to={`/products?category=${encodeURIComponent(cat)}`}
@@ -243,7 +258,7 @@ export default function Navbar() {
                               exit={{ opacity: 0, height: 0 }}
                               className="pl-6 mt-1 space-y-1 border-l-2 border-slate-800"
                             >
-                              {mockCategories.map((cat) => (
+                              {categoriesList.map((cat) => (
                                 <Link
                                   key={cat}
                                   to={`/products?category=${encodeURIComponent(cat)}`}

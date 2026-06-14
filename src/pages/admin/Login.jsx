@@ -67,7 +67,7 @@ export default function Login() {
           </div>
           <div className="flex flex-col">
             <span className="font-display font-extrabold text-base tracking-tight leading-none text-white">
-              SKYLAKE
+              3ARK
             </span>
             <span className="text-[9px] tracking-widest font-semibold text-brand-teal uppercase mt-0.5">
               AUTOMATION SYSTEM

@@ -27,10 +27,10 @@ export default function Footer() {
               <div className="bg-brand-teal p-2 rounded-xl text-slate-950 flex items-center justify-center">
                 <Cpu className="w-5 h-5" />
               </div>
-              <span className="font-display font-bold text-lg tracking-tight text-white">
-                SKYLAKE AUTOMATION
-              </span>
-            </Link>
+                <span className="font-display font-bold text-lg tracking-tight text-white">
+                  3ARK
+                </span>
+              </Link>
             <p className="text-xs leading-relaxed text-slate-500">
               Authorized industrial systems integrator and engineering consultants. Providing premium automation, motion controllers, switchgears, and process analytics.
             </p>
@@ -118,12 +118,12 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-brand-teal shrink-0" />
-                <span>+91 (020) 2567-4883 / +91 98845-67321</span>
+                <span>+91 98986-00605</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-brand-teal shrink-0" />
-                <a href="mailto:info@skylakeautomation.com" className="hover:text-brand-teal transition-colors">
-                  info@skylakeautomation.com
+                <a href="mailto:info@3arkautomation.com" className="hover:text-brand-teal transition-colors">
+                  info@3ark.com
                 </a>
               </li>
             </ul>

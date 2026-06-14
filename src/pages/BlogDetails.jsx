@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock, ChevronLeft, ArrowRight, Info, BookOpen } from 'lucide-react';
-import { mockBlog } from '../data/mockData';
 import { blogService } from '../services/blogService';
 import { getFileUrl } from '../services/api';
 
@@ -9,6 +8,8 @@ export default function BlogDetails() {
   const { id } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recent, setRecent] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -27,23 +28,43 @@ export default function BlogDetails() {
             image: getFileUrl(doc.image),
             category: doc.title ? (doc.title.toLowerCase().includes('opc') ? 'Industrial IoT' : 'Automation') : 'Automation',
             content: doc.content,
-            excerpt: doc.content ? (doc.content.substring(0, 150) + '...') : ''
+            excerpt: doc.content ? doc.content.split(/\s+/).slice(0,15).join(' ') + ' ....' : ''
           };
           setPost(mapped);
         } else {
-          // fallback to mock
-          const mockItem = mockBlog.find((b) => b.id === parseInt(id));
-          setPost(mockItem);
+          setPost(null);
         }
       } catch (err) {
         console.error('Error fetching blog:', err);
-        const mockItem = mockBlog.find((b) => b.id === parseInt(id));
-        setPost(mockItem);
+        setPost(null);
       } finally {
         setLoading(false);
       }
     };
-    fetchBlog();
+    // fetch both the current post and recent posts for sidebar
+    const fetchAll = async () => {
+      await fetchBlog();
+      try {
+        const listRes = await blogService.getAll();
+        if (listRes.success && Array.isArray(listRes.data)) {
+          const mappedList = listRes.data.map((doc) => ({
+            id: doc.id || doc._id,
+            title: doc.title,
+            date: doc.publish_date || doc.publishDate,
+            category: doc.title ? (doc.title.toLowerCase().includes('opc') ? 'Industrial IoT' : 'Automation') : 'Automation',
+          }));
+          setRecent(mappedList.filter((b) => String(b.id) !== String(id)).slice(0,3));
+          setCategories([...new Set(mappedList.map((b) => b.category))]);
+        } else {
+          setRecent([]);
+          setCategories([]);
+        }
+      } catch (err) {
+        setRecent([]);
+        setCategories([]);
+      }
+    };
+    fetchAll();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
 
@@ -84,15 +105,13 @@ export default function BlogDetails() {
 
   const { title, date, readTime, image, category, content, excerpt } = post;
 
-  // Sidebar elements
-  const recentPosts = mockBlog.filter((b) => b.id !== post.id).slice(0, 3);
-  const categories = [...new Set(mockBlog.map((b) => b.category))];
+  // Sidebar elements (populated from API in useEffect)
 
   return (
     <main className="w-full pt-20">
       
       {/* Breadcrumb row */}
-      <section className="bg-slate-900/5 py-4 border-b border-slate-100">
+      {/* <section className="bg-slate-900/5 py-4 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <Link to="/blog" className="hover:text-brand-teal transition-colors flex items-center gap-0.5">
@@ -105,7 +124,7 @@ export default function BlogDetails() {
             <span className="text-slate-800 font-bold truncate">{title}</span>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Blog Details Layout */}
       <section className="py-16 bg-white">
@@ -146,15 +165,15 @@ export default function BlogDetails() {
                 />
               </div>
 
-              {/* Lead paragraph */}
+              {/* Lead paragraph
               <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed italic border-l-4 border-brand-teal pl-4">
                 {excerpt}
-              </p>
+              </p> */}
 
               {/* Rich Body Content */}
               <div className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 font-medium">
                 <p>{content}</p>
-                <h3 className="font-display font-extrabold text-slate-900 text-sm md:text-base mt-8 mb-4">
+                {/* <h3 className="font-display font-extrabold text-slate-900 text-sm md:text-base mt-8 mb-4">
                   Operational Best Practices for Control Engineers
                 </h3>
                 <p>
@@ -162,7 +181,7 @@ export default function BlogDetails() {
                 </p>
                 <p>
                   For detailed advice or parts configuration corresponding to the topics discussed, please explore our products registry or check out the download center for configuration sheets.
-                </p>
+                </p> */}
               </div>
 
             </article>
@@ -171,7 +190,7 @@ export default function BlogDetails() {
             <aside className="lg:col-span-4 space-y-8 bg-brand-slate-light p-6 rounded-2xl border border-slate-100">
               
               {/* Category Widget */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h3 className="font-display font-extrabold text-sm text-slate-900 pb-2.5 border-b border-slate-200 flex items-center gap-1.5">
                   <BookOpen className="w-4 h-4 text-brand-teal" />
                   Categories
@@ -184,21 +203,18 @@ export default function BlogDetails() {
                       className="flex items-center justify-between py-2 px-3 text-xs font-semibold text-slate-600 hover:text-brand-teal hover:bg-slate-50 rounded-lg transition-colors"
                     >
                       {cat}
-                      <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                        {mockBlog.filter((b) => b.category === cat).length}
-                      </span>
                     </Link>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Recent Posts Widget */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h3 className="font-display font-extrabold text-sm text-slate-900 pb-2.5 border-b border-slate-200">
                   Recent Insights
                 </h3>
                 <div className="space-y-4">
-                  {recentPosts.map((postItem) => (
+                  {recent.map((postItem) => (
                     <Link
                       key={postItem.id}
                       to={`/blog/${postItem.id}`}
@@ -214,7 +230,7 @@ export default function BlogDetails() {
               </div>
 
               {/* Quick Brochure Download Promo */}
-              <div className="bg-slate-950 text-white rounded-xl p-5 relative overflow-hidden text-center space-y-4 mt-6">
+              {/* <div className="bg-slate-950 text-white rounded-xl p-5 relative overflow-hidden text-center space-y-4 mt-6">
                 <span className="text-[9px] font-bold text-brand-teal uppercase tracking-widest bg-white/10 px-2 py-1 rounded">
                   Resources
                 </span>
@@ -230,7 +246,7 @@ export default function BlogDetails() {
                 >
                   Download Center
                 </Link>
-              </div>
+              </div> */}
 
             </aside>
 

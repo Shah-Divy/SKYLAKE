@@ -2,9 +2,48 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowRight, Newspaper } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { mockNews } from '../data/mockData';
+import { newsService } from '../services/newsService';
+import { getFileUrl } from '../services/api';
+import { useState, useEffect } from 'react';
+
+const firstWords = (text = '', n = 15) => {
+  const words = String(text).trim().split(/\s+/).filter(Boolean);
+  if (words.length <= n) return words.join(' ');
+  return words.slice(0, n).join(' ') + ' ....';
+};
+
 
 export default function News() {
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const res = await newsService.getAll();
+        if (res.success && Array.isArray(res.data)) {
+          const mapped = res.data.map((n) => ({
+            id: n.id || n._id,
+            title: n.title,
+            image: getFileUrl(n.image),
+            content: n.content,
+            date: n.publish_date ? new Date(n.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+          }));
+          setNews(mapped);
+        } else {
+          setNews([]);
+        }
+      } catch (err) {
+        console.error('Error fetching news:', err);
+        setNews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
   return (
     <main className="w-full pt-20">
       
@@ -25,7 +64,7 @@ export default function News() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockNews.map((item) => (
+            {news.map((item) => (
               <motion.article
                 key={item.id}
                 whileHover={{ y: -5 }}
@@ -56,7 +95,7 @@ export default function News() {
 
                   {/* snippet */}
                   <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-6 flex-grow">
-                    {item.content}
+                    {firstWords(item.content, 15)}
                   </p>
 
                   {/* Footer Action */}

@@ -17,7 +17,7 @@ const mapReview = (r) => {
 
 export const reviewService = {
   getAll: async (params = {}) => {
-    const response = await api.get('/admin/reviews', { params });
+    const response = await api.get('/reviews', { params });
     if (response.data && response.data.success && Array.isArray(response.data.data)) {
       response.data.data = response.data.data.map(mapReview);
     }

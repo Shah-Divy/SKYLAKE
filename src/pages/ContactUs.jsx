@@ -139,8 +139,7 @@ export default function ContactUs() {
                   <div className="text-xs">
                     <div className="font-bold text-slate-900 mb-1">Direct Call Centers</div>
                     <p className="text-slate-500 leading-relaxed font-medium">
-                      Office: +91 (020) 2567-4883 <br />
-                      Support: +91 98845-67321
+                      24 X 7 Help Line: +91 98986-00605
                     </p>
                   </div>
                 </div>
@@ -153,8 +152,8 @@ export default function ContactUs() {
                   <div className="text-xs">
                     <div className="font-bold text-slate-900 mb-1">General Correspondence</div>
                     <p className="text-slate-500 leading-relaxed font-medium">
-                      General: <a href="mailto:info@skylakeautomation.com" className="text-brand-teal font-semibold hover:underline">info@skylakeautomation.com</a> <br />
-                      Support: <a href="mailto:support@skylakeautomation.com" className="text-brand-teal font-semibold hover:underline">support@skylakeautomation.com</a>
+                      {/* General: <a href="mailto:info@3ARK.com" className="text-brand-teal font-semibold hover:underline">info@3ARK.com</a> <br /> */}
+                      Support: <a href="mailto:support@3ARK.com" className="text-brand-teal font-semibold hover:underline">info@3ark.com</a>
                     </p>
                   </div>
                 </div>
@@ -234,23 +233,22 @@ export default function ContactUs() {
                   </div>
 
                   {/* Subject */}
-                  <div>
+                  {/* <div>
                     <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                       Subject Matter
                     </label>
-                    <select
+                    <input
+                      type="text"
                       name="subject"
                       value={formData.subject}
                       onChange={handleInputChange}
-                      className="w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-brand-teal transition-colors"
-                    >
-                      <option value="PLC Programming Consultation">PLC/HMI Controls System Upgrade</option>
-                      <option value="Switchgears Catalog pricing">Switchgears & Relays Quote Request</option>
-                      <option value="Robotic Cell integration">FANUC Collaborative Arms Automation</option>
-                      <option value="General Sales Support">General Product Support</option>
-                    </select>
+                      className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${
+                        errors.subject ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
+                      }`}
+                      placeholder="Brief subject or request summary"
+                    />
                     {errors.subject && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.subject}</p>}
-                  </div>
+                  </div> */}
 
                   {/* Message */}
                   <div>

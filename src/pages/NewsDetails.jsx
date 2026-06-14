@@ -1,15 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, ChevronLeft, ArrowRight, Info } from 'lucide-react';
-import { mockNews } from '../data/mockData';
+import { newsService } from '../services/newsService';
+import { getFileUrl } from '../services/api';
 
 export default function NewsDetails() {
   const { id } = useParams();
-  const newsItem = mockNews.find((n) => n.id === parseInt(id));
+  const [newsItem, setNewsItem] = useState(null);
+  const [allNews, setAllNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const res = await newsService.getAll();
+        if (res.success && Array.isArray(res.data)) {
+          const mapped = res.data.map((n) => ({
+            id: n.id || n._id,
+            title: n.title,
+            image: getFileUrl(n.image),
+            content: n.content,
+            date: n.publish_date ? new Date(n.publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+          }));
+          setAllNews(mapped);
+          const found = mapped.find((m) => String(m.id) === String(id));
+          setNewsItem(found || null);
+        } else {
+          setAllNews([]);
+          setNewsItem(null);
+        }
+      } catch (err) {
+        console.error('Error fetching news:', err);
+        setAllNews([]);
+        setNewsItem(null);
+      } finally {
+        setLoading(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    fetch();
   }, [id]);
+
+  if (loading) {
+    return (
+      <main className="w-full pt-32 pb-24 text-center">
+        <div className="max-w-md mx-auto px-4 space-y-4">
+          <div className="w-12 h-12 border-4 border-brand-teal border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Loading news...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!newsItem) {
     return (
@@ -35,16 +77,16 @@ export default function NewsDetails() {
     );
   }
 
-  const { title, date, image, content } = newsItem;
+  const { title, date, image, content } = newsItem || {};
 
   // Recent news filtering for bottom navigation (excluding current)
-  const otherNews = mockNews.filter((n) => n.id !== newsItem.id).slice(0, 2);
+  const otherNews = (allNews || []).filter((n) => String(n.id) !== String(newsItem?.id)).slice(0, 2);
 
   return (
     <main className="w-full pt-20">
       
       {/* Breadcrumb row */}
-      <section className="bg-slate-900/5 py-4 border-b border-slate-100">
+      {/* <section className="bg-slate-900/5 py-4 border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <Link to="/news" className="hover:text-brand-teal transition-colors flex items-center gap-0.5">
@@ -55,7 +97,7 @@ export default function NewsDetails() {
             <span className="text-slate-800 font-bold truncate">{title}</span>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Main article body */}
       <section className="py-16 bg-white">
@@ -87,9 +129,9 @@ export default function NewsDetails() {
             <div className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 pt-4 font-medium">
               <p>{content}</p>
               
-              <p>
-                As part of our commitment to continuous delivery of top-tier industrial systems, Skylake Automation remains dedicated to engineering high-precision solutions that meet strict safety and operational standards. For further details on this deployment or other services, please contact our corporate liaison office at <a href="mailto:info@skylakeautomation.com" className="text-brand-teal font-bold hover:underline">info@skylakeautomation.com</a>.
-              </p>
+              {/* <p>
+                As part of our commitment to continuous delivery of top-tier industrial systems, 3ARK remains dedicated to engineering high-precision solutions that meet strict safety and operational standards. For further details on this deployment or other services, please contact our corporate liaison office at <a href="mailto:info@3ARK.com" className="text-brand-teal font-bold hover:underline">info@3ARK.com</a>.
+              </p> */}
             </div>
 
           </div>

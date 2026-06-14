@@ -35,7 +35,7 @@ export default function Footer() {
               Authorized industrial systems integrator and engineering consultants. Providing premium automation, motion controllers, switchgears, and process analytics.
             </p>
             {/* Social media icons */}
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               {socialLinks.map((soc) => (
                 <a
                   key={soc.name}
@@ -48,7 +48,7 @@ export default function Footer() {
                   {soc.icon}
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Column 2: Quick Links */}
@@ -86,7 +86,7 @@ export default function Footer() {
           </div>
 
           {/* Column 3: Solutions Range */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h4 className="text-white font-display font-semibold text-sm tracking-wider uppercase">
               Systems Catalog
             </h4>
@@ -102,7 +102,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Column 4: Contact details */}
           <div className="space-y-4">
@@ -113,7 +113,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-brand-teal shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
-                  Plot 45, Automation Block, Phase-II, MIDC Industrial Area, Pune, Maharashtra 411018, India
+                  601-Kohinoor Bussiness Hub, Near Ranasan Toll Plaza, S P Ring Road, Naroda GIDC, Ahmedabad, Gujarat - 382330, India
                 </span>
               </li>
               <li className="flex items-center gap-3">
@@ -134,7 +134,7 @@ export default function Footer() {
         {/* Bottom copyright / policy links */}
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 gap-4 text-xs text-slate-500">
           <div>
-            © {currentYear} Skylake Automation Private Limited. All Rights Reserved.
+            © {currentYear} 3ARK Private Limited. All Rights Reserved.
           </div>
           <div className="flex gap-6">
             <Link to="/shipping-policy" className="hover:text-brand-teal transition-colors">

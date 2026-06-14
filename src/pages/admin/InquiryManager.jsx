@@ -146,6 +146,7 @@ export default function InquiryManager() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Client Name</th>
+                  <th className="px-6 py-4">Subject</th>
                   <th className="px-6 py-4">Email Address</th>
                   <th className="px-6 py-4">Phone Number</th>
                   <th className="px-6 py-4">Inquiry Date</th>
@@ -156,6 +157,7 @@ export default function InquiryManager() {
                 {inquiries.map((inq) => (
                   <tr key={inq._id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-bold text-slate-900">{inq.name}</td>
+                    <td className="px-6 py-4 text-slate-700 font-semibold truncate max-w-[150px]">{inq.subject || 'N/A'}</td>
                     <td className="px-6 py-4 font-semibold text-slate-600">{inq.email}</td>
                     <td className="px-6 py-4 text-slate-500 font-medium font-mono">{inq.phone}</td>
                     <td className="px-6 py-4 font-mono font-medium text-slate-600">
@@ -263,6 +265,10 @@ export default function InquiryManager() {
                     <a href={`tel:${selectedInquiry.phone}`} className="text-slate-700 font-semibold font-mono hover:underline">
                       {selectedInquiry.phone}
                     </a>
+                  </div>
+                  <div className="col-span-2 border-t border-slate-200/60 pt-2 mt-1">
+                    <span className="text-slate-400 font-bold uppercase text-[8px] block">Subject Matter</span>
+                    <span className="font-bold text-slate-800 text-xs">{selectedInquiry.subject || 'N/A'}</span>
                   </div>
                 </div>
 

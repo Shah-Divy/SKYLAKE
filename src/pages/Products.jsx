@@ -103,14 +103,14 @@ export default function Products() {
         if (activeCategory) {
           const matchedCat = categories.find(c => c.categoryName === activeCategory);
           if (matchedCat) {
-            params.categoryId = matchedCat._id;
+            params.category_id = matchedCat._id;
           }
         }
 
         if (activeBrand) {
           const matchedBrand = brands.find(b => b.brandName.toLowerCase() === activeBrand.toLowerCase());
           if (matchedBrand) {
-            params.brandId = matchedBrand._id;
+            params.brand_id = matchedBrand._id;
           }
         }
 

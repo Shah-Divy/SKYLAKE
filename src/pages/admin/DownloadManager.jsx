@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, FileText, Download, AlertCircle, RefreshCw, Tog
 import { motion, AnimatePresence } from 'framer-motion';
 import { downloadService } from '../../services/downloadService';
 import ConfirmModal from '../../components/ConfirmModal';
+import { getFileUrl } from '../../services/api';
 
 export default function DownloadManager() {
   const [downloads, setDownloads] = useState([]);
@@ -89,18 +90,24 @@ export default function DownloadManager() {
 
     setSubmitLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', formTitle);
-      formData.append('description', formDesc);
-      formData.append('videoLink', formVideo);
-      if (formFile) {
-        formData.append('zipFile', formFile); // Field name is 'zipFile' in multer config
-      }
-
       let response;
       if (currentDownload) {
-        response = await downloadService.update(currentDownload._id, formData);
+        const payload = {
+          title: formTitle,
+          description: formDesc,
+          video_link: formVideo,
+          status: currentDownload.status === 'active',
+        };
+        response = await downloadService.update(currentDownload._id, payload);
       } else {
+        const formData = new FormData();
+        formData.append('title', formTitle);
+        formData.append('description', formDesc);
+        formData.append('video_link', formVideo);
+        formData.append('status', '1');
+        if (formFile) {
+          formData.append('zipfile', formFile); // Key matches backend 'zipfile'
+        }
         response = await downloadService.create(formData);
       }
 
@@ -255,7 +262,7 @@ export default function DownloadManager() {
                   </td>
                   <td className="px-6 py-4 font-mono font-medium text-slate-600">
                     <a
-                      href={d.zipFile}
+                      href={getFileUrl(d.zipFile)}
                       target="_blank"
                       rel="noreferrer"
                       className="text-brand-teal hover:underline flex items-center gap-1 font-bold"
@@ -337,22 +344,24 @@ export default function DownloadManager() {
                 </div>
 
                 {/* File manual upload */}
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
-                    {currentDownload ? 'Replace Resource File (Optional)' : 'Upload Resource File (Required)'}
-                  </label>
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
-                  />
-                  {previewName && (
-                    <div className="mt-1 text-[10px] font-bold text-brand-teal flex items-center gap-1">
-                      <FileText className="w-3.5 h-3.5" />
-                      {previewName}
-                    </div>
-                  )}
-                </div>
+                {!currentDownload && (
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">
+                      Upload Resource File (Required)
+                    </label>
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
+                    />
+                    {previewName && (
+                      <div className="mt-1 text-[10px] font-bold text-brand-teal flex items-center gap-1">
+                        <FileText className="w-3.5 h-3.5" />
+                        {previewName}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Video Link */}
                 <div>

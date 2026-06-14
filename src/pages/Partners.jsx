@@ -110,14 +110,14 @@ export default function Partners() {
 
                   {/* Brand Footer Stats & Actions */}
                   <div className="mt-8 pt-4 border-t border-slate-100/60 flex items-center justify-between">
-                    <div className="flex flex-col">
+                    {/* <div className="flex flex-col">
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                         Active Lines
                       </span>
                       <span className="text-xs font-bold text-slate-700">
                         {brand.productsCount}+ Components
                       </span>
-                    </div>
+                    </div> */}
 
                     <Link
                       to={`/products?brand=${encodeURIComponent(brand.name)}`}

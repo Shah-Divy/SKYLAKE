@@ -47,7 +47,7 @@ api.interceptors.response.use(
 
 export const getFileUrl = (path) => {
   if (!path) return '';
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
     return path;
   }
   const base = API_BASE_URL.replace(/\/api$/, '');

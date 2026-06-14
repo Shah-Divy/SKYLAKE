@@ -461,10 +461,10 @@ export default function Home() {
                   <h4 className="text-white font-display font-bold text-sm">
                     {item.title}
                   </h4>
-                  <div className="flex items-center gap-1.5 text-brand-teal font-bold text-[10px] mt-2">
+                  {/* <div className="flex items-center gap-1.5 text-brand-teal font-bold text-[10px] mt-2">
                     <Eye className="w-3.5 h-3.5" />
                     Expand Preview
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
             ))}
@@ -542,13 +542,13 @@ export default function Home() {
                       {job.title}
                     </h3>
                     <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md">
-                      {job.department}
+                      {job.experience}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 text-slate-500 text-xs">
                     <span className="flex items-center gap-1">
                       <Briefcase className="w-3.5 h-3.5" />
-                      {job.experience}
+                      {job.description}
                     </span>
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" />
@@ -557,13 +557,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                <button
+                {/* <button
                   onClick={() => setSelectedJob(job)}
                   className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer inline-flex items-center gap-1 shrink-0 self-stretch sm:self-center justify-center"
                 >
                   Apply Now
                   <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                </button> */}
               </div>
             ))}
           </div>

@@ -26,7 +26,7 @@ export default function CategoryManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await categoryService.getAll({ limit: 100 });
+      const response = await categoryService.getAll({ limit: 100, isAdmin: true });
       if (response.success) {
         setCategories(response.data || []);
       } else {
@@ -68,15 +68,19 @@ export default function CategoryManager() {
 
     setSubmitLoading(true);
     try {
-      const payload = {
-        categoryName: formName,
-        description: formDesc,
-      };
-
       let response;
       if (currentCategory) {
+        const payload = {
+          category_name: formName,
+          description: formDesc,
+        };
         response = await categoryService.update(currentCategory._id, payload);
       } else {
+        const payload = {
+          category_name: formName,
+          description: formDesc,
+          status: "1",
+        };
         response = await categoryService.create(payload);
       }
 
@@ -119,7 +123,7 @@ export default function CategoryManager() {
 
   const handleToggleStatus = async (cat) => {
     try {
-      const response = await categoryService.toggleStatus(cat._id);
+      const response = await categoryService.toggleStatus(cat);
       if (response.success) {
         setCategories(
           categories.map((c) =>

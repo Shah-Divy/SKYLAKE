@@ -18,7 +18,7 @@ export default function ProfileManager() {
     setLoading(true);
     setErrorMsg('');
     try {
-      const response = await companyProfileService.get();
+      const response = await companyProfileService.getAdmin();
       if (response.success && response.data) {
         setCompanyProfile(response.data.companyProfile || '');
         setMission(response.data.mission || '');

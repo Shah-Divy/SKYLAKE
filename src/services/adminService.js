@@ -12,7 +12,13 @@ export const adminService = {
   },
 
   getProfile: async () => {
-    const response = await api.get('/admin/profile');
+    const response = await api.get('/admin/me');
+    if (response.data && response.data.success && response.data.data) {
+      response.data.data = {
+        ...response.data.data,
+        createdAt: response.data.data.created_at,
+      };
+    }
     return response.data;
   },
 
@@ -22,7 +28,10 @@ export const adminService = {
   },
 
   changePassword: async (currentPassword, newPassword) => {
-    const response = await api.put('/admin/change-password', { currentPassword, newPassword });
+    const response = await api.post('/admin/change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
     return response.data;
   },
 };

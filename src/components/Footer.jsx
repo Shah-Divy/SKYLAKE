@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, Cpu, Linkedin, Youtube, Facebook, Instagram, PhoneCall } from 'lucide-react';
-import { mockCategories } from '../data/mockData';
+import { Mail, Phone, MapPin, Linkedin, Youtube, Facebook, Instagram, PhoneCall } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -23,14 +22,12 @@ export default function Footer() {
           
           {/* Column 1: Company Profile Info */}
           <div className="space-y-6">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="bg-brand-teal p-2 rounded-xl text-slate-950 flex items-center justify-center">
-                <Cpu className="w-5 h-5" />
-              </div>
-                <span className="font-display font-bold text-lg tracking-tight text-white">
-                  3ARK
-                </span>
-              </Link>
+            <Link to="/" className="flex items-center gap-3">
+              <img src={encodeURI('/3ARK logo.png')} alt="3ARK" className="w-30 h-30 object-contain" />
+              <span className="font-display font-bold text-lg tracking-tight text-white">
+                3ARK
+              </span>
+            </Link>
             <p className="text-xs leading-relaxed text-slate-500">
               Authorized industrial systems integrator and engineering consultants. Providing premium automation, motion controllers, switchgears, and process analytics.
             </p>

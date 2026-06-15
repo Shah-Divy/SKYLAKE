@@ -126,7 +126,7 @@ export default function Home() {
           bannerService.getAll(),
           productService.getAll({ page: 1, limit: 3 }),
           galleryService.getAll(),
-          reviewService.getAll(),
+          reviewService.getAllReview(),
           jobService.getAll(),
           brandService.getAll()
         ]);

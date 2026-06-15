@@ -17,6 +17,14 @@ const mapReview = (r) => {
 
 export const reviewService = {
   getAll: async (params = {}) => {
+    const response = await api.get('/admin/reviews', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapReview);
+    }
+    return response.data;
+  },
+
+  getAllReview: async (params = {}) => {
     const response = await api.get('/reviews', { params });
     if (response.data && response.data.success && Array.isArray(response.data.data)) {
       response.data.data = response.data.data.map(mapReview);
@@ -33,7 +41,7 @@ export const reviewService = {
   },
 
   create: async (formData) => {
-    const response = await api.post('/admin/reviews', formData, {
+    const response = await api.post('/reviews', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

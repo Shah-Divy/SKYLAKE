@@ -73,16 +73,17 @@ export default function Navbar() {
           
           {/* Logo Brand Section */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="bg-brand-teal p-2 rounded-xl text-slate-950 flex items-center justify-center shadow-md shadow-brand-teal/20 group-hover:scale-105 transition-transform duration-300">
-              <Cpu className="w-6 h-6 animate-pulse" />
+            <div className="p-1 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+              <img
+                src={encodeURI('/3ARK logo.png')}
+                alt="3ARK"
+                className="w-25 h-25 object-contain"
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-display font-extrabold text-xl tracking-tight leading-none text-white">
                 3ARK
               </span>
-              {/* <span className="text-[10px] tracking-widest font-semibold text-brand-teal uppercase mt-0.5">
-                AUTOMATION
-              </span> */}
             </div>
           </Link>
 

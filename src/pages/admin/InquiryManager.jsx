@@ -266,10 +266,10 @@ export default function InquiryManager() {
                       {selectedInquiry.phone}
                     </a>
                   </div>
-                  <div className="col-span-2 border-t border-slate-200/60 pt-2 mt-1">
+                  {/* <div className="col-span-2 border-t border-slate-200/60 pt-2 mt-1">
                     <span className="text-slate-400 font-bold uppercase text-[8px] block">Subject Matter</span>
                     <span className="font-bold text-slate-800 text-xs">{selectedInquiry.subject || 'N/A'}</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Message body */}

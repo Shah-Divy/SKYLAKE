@@ -416,7 +416,7 @@ export default function ProductManager() {
                   <th className="px-6 py-4">Manufacturer</th>
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Status</th>
+                  {/* <th className="px-6 py-4">Status</th> */}
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -442,7 +442,7 @@ export default function ProductManager() {
                         `$${p.price}`
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    {/* <td className="px-6 py-4">
                       <button
                         onClick={() => handleToggleStatus(p)}
                         className={`text-[8px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
@@ -451,7 +451,7 @@ export default function ProductManager() {
                       >
                         {p.status === 'active' ? 'Active' : 'Inactive'}
                       </button>
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button

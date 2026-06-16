@@ -257,7 +257,7 @@ export default function Home() {
               >
                 {/* Background media handler */}
                 <div className="absolute inset-0 w-full h-full">
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/75 to-slate-950/20 z-10" />
+                  <div className="absolute inset-0 bg-linear-to-r from-slate-950 via-slate-900/75 to-slate-950/20 z-10" />
                   {slide.type === 'video' ? (
                     <video
                       src={slide.url}

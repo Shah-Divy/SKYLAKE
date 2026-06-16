@@ -209,7 +209,7 @@ export default function JobManager() {
                 <th className="px-6 py-4">Position Title</th>
                 <th className="px-6 py-4">Experience</th>
                 <th className="px-6 py-4">Location</th>
-                <th className="px-6 py-4">Status</th>
+                {/* <th className="px-6 py-4">Status</th> */}
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -232,7 +232,7 @@ export default function JobManager() {
                   </td>
                   <td className="px-6 py-4 font-medium">{job.experience}</td>
                   <td className="px-6 py-4 text-slate-500 font-medium">{job.location}</td>
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <button
                       onClick={() => handleToggleStatus(job)}
                       className={`text-[8px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
@@ -241,7 +241,7 @@ export default function JobManager() {
                     >
                       {job.status === 'active' ? 'Active' : 'Inactive'}
                     </button>
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button

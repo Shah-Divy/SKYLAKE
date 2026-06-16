@@ -64,10 +64,10 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50/80">
           <div className="flex flex-col">
             <span className="text-[10px] text-slate-400 line-through font-semibold leading-none">
-              ${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
             <span className="text-sm font-extrabold text-slate-900">
-              ${discountPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {discountPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </span>
           </div>
 

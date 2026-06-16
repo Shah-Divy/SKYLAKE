@@ -119,8 +119,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-brand-teal shrink-0" />
-                <a href="mailto:info@3arkautomation.com" className="hover:text-brand-teal transition-colors">
-                  info@3ark.com
+                <a href="mailto:info@3ark.in" className="hover:text-brand-teal transition-colors">
+                  info@3ark.in
                 </a>
               </li>
             </ul>

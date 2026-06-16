@@ -265,10 +265,10 @@ export default function ProductDetails() {
               <div className="flex items-center gap-4 py-3 border-y border-slate-100">
                 <div className="flex flex-col">
                   <span className="text-slate-400 line-through text-xs font-semibold">
-                    Original Price: ${price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    Original Price: {price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
                   <span className="text-2xl font-extrabold text-slate-950 mt-0.5">
-                    Discounted: ${discountPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    Discounted: {discountPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 {discountPercent > 0 && (

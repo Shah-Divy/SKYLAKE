@@ -126,13 +126,10 @@ export default function NewsDetails() {
             </div>
 
             {/* Detailed Content */}
-            <div className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 pt-4 font-medium">
-              <p>{content}</p>
-              
-              {/* <p>
-                As part of our commitment to continuous delivery of top-tier industrial systems, 3ARK remains dedicated to engineering high-precision solutions that meet strict safety and operational standards. For further details on this deployment or other services, please contact our corporate liaison office at <a href="mailto:info@3ARK.com" className="text-brand-teal font-bold hover:underline">info@3ARK.com</a>.
-              </p> */}
-            </div>
+            <div 
+              className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 pt-4 font-medium rich-text-content"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
 
           </div>
 

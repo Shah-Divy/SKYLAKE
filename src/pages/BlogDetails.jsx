@@ -171,8 +171,10 @@ export default function BlogDetails() {
               </p> */}
 
               {/* Rich Body Content */}
-              <div className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 font-medium">
-                <p>{content}</p>
+              <div 
+                className="text-xs md:text-sm text-slate-600 leading-relaxed space-y-6 font-medium rich-text-content"
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
                 {/* <h3 className="font-display font-extrabold text-slate-900 text-sm md:text-base mt-8 mb-4">
                   Operational Best Practices for Control Engineers
                 </h3>
@@ -182,7 +184,6 @@ export default function BlogDetails() {
                 <p>
                   For detailed advice or parts configuration corresponding to the topics discussed, please explore our products registry or check out the download center for configuration sheets.
                 </p> */}
-              </div>
 
             </article>
 

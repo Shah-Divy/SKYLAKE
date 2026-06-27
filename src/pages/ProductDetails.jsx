@@ -204,7 +204,7 @@ export default function ProductDetails() {
                 <img
                   src={activeImage}
                   alt={title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-contain p-4"
                 />
               </div>
 
@@ -222,7 +222,7 @@ export default function ProductDetails() {
                       <img
                         src={img}
                         alt={`${title} thumb ${index}`}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-contain p-1"
                       />
                     </button>
                   ))}

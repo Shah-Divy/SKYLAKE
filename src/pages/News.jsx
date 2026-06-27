@@ -6,6 +6,10 @@ import { newsService } from '../services/newsService';
 import { getFileUrl } from '../services/api';
 import { useState, useEffect } from 'react';
 
+const stripHtml = (html = '') => {
+  return String(html).replace(/<[^>]*>/g, '');
+};
+
 const firstWords = (text = '', n = 15) => {
   const words = String(text).trim().split(/\s+/).filter(Boolean);
   if (words.length <= n) return words.join(' ');
@@ -95,7 +99,7 @@ export default function News() {
 
                   {/* snippet */}
                   <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed mb-6 flex-grow">
-                    {firstWords(item.content, 15)}
+                    {firstWords(stripHtml(item.content), 15)}
                   </p>
 
                   {/* Footer Action */}

@@ -85,11 +85,11 @@ export default function Partners() {
                 >
                   <div className="space-y-6">
                     {/* Brand Logo Header Container */}
-                    <div className="h-16 bg-white p-3 rounded-xl border border-slate-50 flex items-center justify-center overflow-hidden">
+                    <div className="h-24 bg-transparent flex items-center justify-center overflow-hidden">
                       <img
                         src={brand.logo}
                         alt={brand.name}
-                        className="max-h-full max-w-[150px] object-contain"
+                        className="max-h-full max-w-[220px] object-contain"
                       />
                     </div>
 

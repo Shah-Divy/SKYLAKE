@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation, Outlet } from 'react-router-
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import WhatsAppButton from './components/WhatsAppButton';
 
 // Public Pages
 import Home from './pages/Home';
@@ -62,6 +63,7 @@ function PublicLayout() {
         <Outlet />
       </div>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 }

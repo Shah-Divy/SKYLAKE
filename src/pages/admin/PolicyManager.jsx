@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Save, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { policyService } from '../../services/policyService';
+import HtmlEditor from '../../components/HtmlEditor';
 
 export default function PolicyManager() {
   const [activeTab, setActiveTab] = useState('shipping');
@@ -161,12 +162,10 @@ export default function PolicyManager() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Shipping Guidelines Paragraphs</label>
-                  <textarea
-                    rows={8}
-                    required
+                  <HtmlEditor
                     value={shippingContent}
-                    onChange={(e) => setShippingContent(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 px-3.5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none font-mono text-[11px]"
+                    onChange={setShippingContent}
+                    placeholder="Write shipping guidelines here..."
                   />
                 </div>
               </div>
@@ -184,12 +183,10 @@ export default function PolicyManager() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Returns &amp; Cancellations Guidelines</label>
-                  <textarea
-                    rows={8}
-                    required
+                  <HtmlEditor
                     value={refundContent}
-                    onChange={(e) => setRefundContent(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 px-3.5 py-3 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none font-mono text-[11px]"
+                    onChange={setRefundContent}
+                    placeholder="Write returns and cancellations guidelines here..."
                   />
                 </div>
               </div>

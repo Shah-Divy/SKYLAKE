@@ -29,12 +29,12 @@ export default function AboutUs() {
       <section className="relative bg-slate-950 py-24 text-white text-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center opacity-10 bg-[url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1920')]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3 z-10">
-          <span className="text-[10px] font-bold text-brand-teal tracking-widest uppercase">
+          <span className="text-[20px] font-bold text-brand-teal tracking-widest uppercase">
             About 3Ark
           </span>
-          <h1 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight leading-none text-glow-teal">
+          {/* <h1 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight leading-none text-glow-teal">
             {profile?.company_profile || profile?.companyProfile || ''}
-          </h1>
+          </h1> */}
           {/* <p className="text-xs text-slate-400 max-w-xl mx-auto">
             {profile?.mission || ''}
           </p> */}
@@ -51,22 +51,23 @@ export default function AboutUs() {
                 Company Profile
               </span>
               <h2 className="font-display font-extrabold text-2xl md:text-4xl text-slate-900 tracking-tight leading-tight">
-                {profile?.company_profile || profile?.companyProfile || ''}
+                Corporate Profile & Heritage
               </h2>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {profile?.mission || ''}
-              </p>
+              <div 
+                className="text-xs text-slate-500 leading-relaxed rich-text-content"
+                dangerouslySetInnerHTML={{ __html: profile?.company_profile || profile?.companyProfile || '' }}
+              />
               
             </div>
 
             {/* Visual illustration image */}
             <div className="relative">
               <div className="absolute -inset-4 bg-brand-orange/5 rounded-3xl rotate-2" />
-              <div className="relative bg-slate-950 rounded-3xl overflow-hidden shadow-xl aspect-video md:aspect-[4/3]">
+              <div className="relative bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-sm aspect-video md:aspect-[4/3]">
                 <img
                   src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&q=80&w=800"
                   alt="Quality assurance verification"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-2"
                 />
               </div>
             </div>
@@ -80,11 +81,17 @@ export default function AboutUs() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-8 rounded-2xl border bg-white shadow-sm flex flex-col items-start gap-4">
               <h3 className="font-display font-extrabold text-lg text-slate-900">Mission</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{profile?.mission || ''}</p>
+              <div 
+                className="text-xs text-slate-500 leading-relaxed rich-text-content w-full text-left"
+                dangerouslySetInnerHTML={{ __html: profile?.mission || '' }}
+              />
             </div>
             <div className="p-8 rounded-2xl border bg-white shadow-sm flex flex-col items-start gap-4">
               <h3 className="font-display font-extrabold text-lg text-slate-900">Vision</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{profile?.vision || ''}</p>
+              <div 
+                className="text-xs text-slate-500 leading-relaxed rich-text-content w-full text-left"
+                dangerouslySetInnerHTML={{ __html: profile?.vision || '' }}
+              />
             </div>
           </div>
         </div>
@@ -103,8 +110,11 @@ export default function AboutUs() {
                 </div>
               ))}
             </div>
-          ) : profile?.achievements || profile?.achievements ? (
-            <p className="text-xs text-slate-500">{profile?.achievements || profile?.achievement}</p>
+          ) : (profile?.achievements || profile?.achievement) ? (
+            <div 
+              className="text-xs text-slate-500 leading-relaxed rich-text-content"
+              dangerouslySetInnerHTML={{ __html: profile?.achievements || profile?.achievement }}
+            />
           ) : (
             <p className="text-xs text-slate-500">No achievements available.</p>
           )}

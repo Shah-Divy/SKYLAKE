@@ -14,6 +14,10 @@ const getBlogCategory = (title) => {
   return 'Automation';
 };
 
+const stripHtml = (html = '') => {
+  return String(html).replace(/<[^>]*>/g, '');
+};
+
 const firstWords = (text = '', n = 15) => {
   const words = String(text).trim().split(/\s+/).filter(Boolean);
   if (words.length <= n) return words.join(' ');
@@ -23,7 +27,7 @@ const firstWords = (text = '', n = 15) => {
 const mapBlogDoc = (doc) => ({
   id: doc._id,
   title: doc.title,
-  excerpt: firstWords(doc.content, 15),
+  excerpt: firstWords(stripHtml(doc.content), 15),
   category: getBlogCategory(doc.title),
   date: doc.publishDate ? new Date(doc.publishDate).toLocaleDateString('en-US', {
     year: 'numeric',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Save, FileText, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { companyProfileService } from '../../services/companyProfileService';
+import HtmlEditor from '../../components/HtmlEditor';
 
 export default function ProfileManager() {
   const [loading, setLoading] = useState(true);
@@ -127,12 +128,9 @@ export default function ProfileManager() {
           {/* Primary Profile description */}
           <div>
             <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Primary Company Profile Description</label>
-            <textarea
-              rows={5}
-              required
+            <HtmlEditor
               value={companyProfile}
-              onChange={(e) => setCompanyProfile(e.target.value)}
-              className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+              onChange={setCompanyProfile}
               placeholder="e.g. 3ARK Industrial Automation is a leading system integration company..."
             />
           </div>
@@ -141,24 +139,18 @@ export default function ProfileManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Corporate Mission Statement</label>
-              <textarea
-                rows={4}
-                required
+              <HtmlEditor
                 value={mission}
-                onChange={(e) => setMission(e.target.value)}
-                className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+                onChange={setMission}
                 placeholder="Mission of delivering robust controls solutions..."
               />
             </div>
 
             <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Corporate Vision Statement</label>
-              <textarea
-                rows={4}
-                required
+              <HtmlEditor
                 value={vision}
-                onChange={(e) => setVision(e.target.value)}
-                className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+                onChange={setVision}
                 placeholder="Vision for the future of factory systems automation..."
               />
             </div>
@@ -167,11 +159,9 @@ export default function ProfileManager() {
           {/* Achievements */}
           <div>
             <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Achievements &amp; Milestones (Optional)</label>
-            <textarea
-              rows={4}
+            <HtmlEditor
               value={achievements}
-              onChange={(e) => setAchievements(e.target.value)}
-              className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs leading-relaxed"
+              onChange={setAchievements}
               placeholder="e.g. Over 500+ successful installations, certified Siemens partners..."
             />
           </div>

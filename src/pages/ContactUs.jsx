@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,8 @@ export default function ContactUs() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const validate = () => {
     const newErrors = {};
@@ -36,6 +39,9 @@ export default function ContactUs() {
     }
     if (!formData.message.trim()) {
       newErrors.message = 'Please write your message';
+    }
+    if (!recaptchaToken) {
+      newErrors.recaptcha = 'Please verify you are not a robot';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;                                                                             
@@ -62,12 +68,15 @@ export default function ContactUs() {
         phone: formData.phone.trim(),
         subject: formData.subject,
         message: formData.message.trim(),
+        recaptchaToken,
       };
       const response = await api.post('/contact', payload);
       if (response?.data?.success) {
         setIsSubmitted(true);
         // Reset form after success
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        if (recaptchaRef.current) recaptchaRef.current.reset();
+        setRecaptchaToken(null);
       } else {
         setErrors((prev) => ({ ...prev, api: response?.data?.message || 'Submission failed.' }));
       }
@@ -153,7 +162,7 @@ export default function ContactUs() {
                     <div className="font-bold text-slate-900 mb-1">General Correspondence</div>
                     <p className="text-slate-500 leading-relaxed font-medium">
                       {/* General: <a href="mailto:info@3ARK.com" className="text-brand-teal font-semibold hover:underline">info@3ARK.com</a> <br /> */}
-                      Support: <a href="mailto:support@3ARK.com" className="text-brand-teal font-semibold hover:underline">info@3ark.com</a>
+                      Support: <a href="mailto:info@3ark.in" className="text-brand-teal font-semibold hover:underline">info@3ark.in</a>
                     </p>
                   </div>
                 </div>
@@ -266,6 +275,19 @@ export default function ContactUs() {
                       placeholder="Specify model numbers, target quantities, and layout specifications..."
                     />
                     {errors.message && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.message}</p>}
+                  </div>
+
+                  {/* reCAPTCHA v2 Checkbox */}
+                  <div>
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={import.meta.env.VITE_GOOGLE_SITE_KEY}
+                      onChange={(token) => {
+                        setRecaptchaToken(token);
+                        if (errors.recaptcha) setErrors((prev) => ({ ...prev, recaptcha: '' }));
+                      }}
+                    />
+                    {errors.recaptcha && <p className="text-red-500 text-[10px] mt-2 font-semibold">{errors.recaptcha}</p>}
                   </div>
 
                   {/* Submit Button */}

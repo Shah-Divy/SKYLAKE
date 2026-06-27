@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { blogService } from '../../services/blogService';
 import ConfirmModal from '../../components/ConfirmModal';
 import { getFileUrl } from '../../services/api';
+import HtmlEditor from '../../components/HtmlEditor';
 
 export default function BlogManager() {
   const [blogs, setBlogs] = useState([]);
@@ -368,15 +369,13 @@ export default function BlogManager() {
                   </div>
                 )}
 
-                {/* Content */}
+                 {/* Content */}
                 <div>
                   <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Rich Blog Content</label>
-                  <textarea
-                    rows={6}
-                    required
+                  <HtmlEditor
                     value={formContent}
-                    onChange={(e) => setFormContent(e.target.value)}
-                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white resize-none text-xs"
+                    onChange={setFormContent}
+                    placeholder="Write rich blog content here..."
                   />
                 </div>
 

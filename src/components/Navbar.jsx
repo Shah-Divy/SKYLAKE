@@ -68,21 +68,21 @@ export default function Navbar() {
           : 'bg-slate-900 border-b border-slate-800'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-3">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo Brand Section */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-1 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <div className="p-1 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-300 shrink-0">
               <img
                 src={encodeURI('/3ARK logo.png')}
                 alt="3ARK"
-                className="w-25 h-25 object-contain"
+                className="h-25 sm:h-25 w-auto object-contain"
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-extrabold text-xl tracking-tight leading-none text-white">
-                3ARK
+              <span className="font-display font-extrabold text-sm sm:text-base xl:text-lg tracking-tight leading-none text-white whitespace-nowrap">
+                3ARK PRIVATE LIMITED
               </span>
             </div>
           </Link>
@@ -99,16 +99,16 @@ export default function Navbar() {
                 {link.hasDropdown ? (
                   <button
                     onClick={() => navigate('/products')}
-                    className="flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-800/50"
+                    className="flex items-center gap-0.5 px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-semibold transition-colors duration-200 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-800/50"
                   >
                     {link.name}
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showProductsDropdown ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${showProductsDropdown ? 'rotate-180' : ''}`} />
                   </button>
                 ) : (
                   <NavLink
                     to={link.path}
                     className={({ isActive }) =>
-                      `px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 ${
+                      `px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-semibold transition-colors duration-200 ${
                         isActive
                           ? 'text-brand-teal bg-brand-teal/10'
                           : 'text-slate-300 hover:text-white hover:bg-slate-800/50'

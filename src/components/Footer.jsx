@@ -23,14 +23,14 @@ export default function Footer() {
           {/* Column 1: Company Profile Info */}
           <div className="space-y-6">
             <Link to="/" className="flex items-center gap-3">
-              <img src={encodeURI('/3ARK logo.png')} alt="3ARK" className="w-30 h-30 object-contain" />
+              <img src={encodeURI('/3ARK logo.png')} alt="3ARK" className="w-36 h-36 object-contain" />
               <span className="font-display font-bold text-lg tracking-tight text-white">
-                3ARK
+                3ARK PRIVATE LIMITED
               </span>
             </Link>
-            <p className="text-xs leading-relaxed text-slate-500">
+            {/* <p className="text-xs leading-relaxed text-slate-500">
               Authorized industrial systems integrator and engineering consultants. Providing premium automation, motion controllers, switchgears, and process analytics.
-            </p>
+            </p> */}
             {/* Social media icons */}
             {/* <div className="flex gap-2">
               {socialLinks.map((soc) => (
@@ -56,7 +56,7 @@ export default function Footer() {
             <ul className="space-y-2.5 text-xs">
               <li>
                 <Link to="/about" className="hover:text-brand-teal transition-colors">
-                  Company Profile & Profile
+                  Company Profile
                 </Link>
               </li>
               <li>
@@ -64,7 +64,7 @@ export default function Footer() {
                   Partner Brands
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/downloads" className="hover:text-brand-teal transition-colors">
                   Technical Download Center
                 </Link>
@@ -77,6 +77,16 @@ export default function Footer() {
               <li>
                 <Link to="/blog" className="hover:text-brand-teal transition-colors">
                   Expert Insights Blog
+                </Link>
+              </li> */}
+              <li>
+                <Link to="/shipping-policy" className="hover:text-brand-teal transition-colors">
+                  Shipping & Delivery Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund-policy" className="hover:text-brand-teal transition-colors">
+                  Refunds & Cancellation Policy
                 </Link>
               </li>
             </ul>
@@ -133,14 +143,14 @@ export default function Footer() {
           <div>
             © {currentYear} 3ARK Private Limited. All Rights Reserved.
           </div>
-          <div className="flex gap-6">
+          {/* <div className="flex gap-6">
             <Link to="/shipping-policy" className="hover:text-brand-teal transition-colors">
               Shipping & Delivery Policy
             </Link>
             <Link to="/refund-policy" className="hover:text-brand-teal transition-colors">
               Refunds & Cancellation Policy
             </Link>
-          </div>
+          </div> */}
         </div>
 
       </div>

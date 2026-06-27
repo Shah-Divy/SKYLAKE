@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, ChevronRight, Briefcase, MapPin, Eye, Play, Pause } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Briefcase, MapPin, Eye, Play, Pause, Star, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Static mock data removed per request
@@ -41,6 +41,91 @@ export default function Home() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Review Form States
+  const [formClientName, setFormClientName] = useState('');
+  const [formCompanyName, setFormCompanyName] = useState('');
+  const [formRating, setFormRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [formReview, setFormReview] = useState('');
+  const [formImage, setFormImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [reviewSubmitLoading, setReviewSubmitLoading] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState(null);
+
+  const handleReviewFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setSubmitMessage({ type: 'error', text: 'Please select a valid image file.' });
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        setSubmitMessage({ type: 'error', text: 'Image file size should be less than 2MB.' });
+        return;
+      }
+      setFormImage(file);
+      setImagePreview(URL.createObjectURL(file));
+      setSubmitMessage(null);
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitMessage(null);
+
+    if (!formClientName.trim() || !formCompanyName.trim() || !formReview.trim()) {
+      setSubmitMessage({ type: 'error', text: 'All fields (except image) are required.' });
+      return;
+    }
+
+    if (formRating < 1 || formRating > 5) {
+      setSubmitMessage({ type: 'error', text: 'Rating must be between 1 and 5.' });
+      return;
+    }
+
+    setReviewSubmitLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('customer_name', formClientName.trim());
+      formData.append('company_name', formCompanyName.trim());
+      formData.append('review', formReview.trim());
+      formData.append('rating', String(formRating));
+      formData.append('status', '0'); // inactive by default until approved
+
+      if (formImage) {
+        formData.append('profile_image', formImage);
+      }
+
+      const response = await reviewService.create(formData);
+
+      if (response.success) {
+        setSubmitMessage({
+          type: 'success',
+          text: 'Thank you! Your review has been submitted successfully and is awaiting administrator approval.'
+        });
+        setFormClientName('');
+        setFormCompanyName('');
+        setFormRating(5);
+        setFormReview('');
+        setFormImage(null);
+        setImagePreview('');
+      } else {
+        setSubmitMessage({
+          type: 'error',
+          text: response.message || 'Failed to submit review. Please try again.'
+        });
+      }
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      setSubmitMessage({
+        type: 'error',
+        text: 'An error occurred while submitting your review. Please try again.'
+      });
+    } finally {
+      setReviewSubmitLoading(false);
+    }
+  };
+
   // Data mapping helpers to conform Mongo schemas to existing JSX keys
   const mapBanner = (b) => ({
     id: b._id || b.id,
@@ -55,10 +140,10 @@ export default function Home() {
   });
 
   const mapIntro = (profile) => ({
-    title: profile.company_profile || 'Pioneering the Future of Automation & Control Engineering',
+    title: 'Pioneering the Future of Automation & Control Engineering',
     subtitle: profile.company_profile || '',
-    paragraph1: profile.mission || '',
-    paragraph2: profile.vision || '',
+    // paragraph1: profile.mission || '',
+    // paragraph2: profile.vision || '',
     achievements: profile.achievements || '',
     image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800',
     stats: [
@@ -242,7 +327,7 @@ export default function Home() {
     <main className="w-full">
       
       {/* SECTION A: Hero Banner Slider */}
-      <section className="relative h-[85vh] md:h-[90vh] bg-slate-950 overflow-hidden">
+      <section className="relative h-[55vh] sm:h-[70vh] md:h-[85vh] lg:h-[90vh] bg-slate-950 overflow-hidden">
         <AnimatePresence mode="wait">
           {activeBanners.map((slide, index) => {
             if (index !== currentSlide) return null;
@@ -271,7 +356,7 @@ export default function Home() {
                     <img
                       src={slide.url}
                       alt={slide.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain md:object-cover"
                     />
                   )}
                 </div>
@@ -394,20 +479,27 @@ export default function Home() {
                   <h2 className="font-display font-extrabold text-2xl md:text-4xl text-slate-900 tracking-tight leading-tight">
                     {activeIntro.title}
                   </h2>
-                  <p className="text-sm font-bold text-slate-600 leading-relaxed">
-                    {activeIntro.subtitle}
-                  </p>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {activeIntro.paragraph1}
-                  </p>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {activeIntro.paragraph2}
-                  </p>
+                  <div
+                    className="text-sm font-semibold text-slate-600 leading-relaxed rich-text-content"
+                    dangerouslySetInnerHTML={{ __html: activeIntro.subtitle }}
+                  />
+                  {activeIntro.paragraph1 && (
+                    <div
+                      className="text-xs text-slate-500 leading-relaxed rich-text-content mt-2"
+                      dangerouslySetInnerHTML={{ __html: activeIntro.paragraph1 }}
+                    />
+                  )}
+                  {activeIntro.paragraph2 && (
+                    <div
+                      className="text-xs text-slate-500 leading-relaxed rich-text-content mt-2"
+                      dangerouslySetInnerHTML={{ __html: activeIntro.paragraph2 }}
+                    />
+                  )}
                   {activeIntro.achievements && (
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      <strong className="font-bold">Achievements: </strong>
-                      {activeIntro.achievements}
-                    </p>
+                    <div className="text-xs text-slate-500 leading-relaxed rich-text-content mt-4">
+                      <strong className="font-bold text-slate-900 block mb-1">Achievements:</strong>
+                      <div dangerouslySetInnerHTML={{ __html: activeIntro.achievements }} />
+                    </div>
                   )}
 
                   {/* Stats highlights */}
@@ -432,12 +524,12 @@ export default function Home() {
             {/* Intro Visual Image */}
             <div className="relative">
               <div className="absolute -inset-4 bg-brand-teal/5 rounded-3xl -rotate-2" />
-              <div className="relative bg-slate-950 rounded-3xl overflow-hidden shadow-xl aspect-video md:aspect-[4/3]">
+              <div className="relative bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-sm aspect-video md:aspect-[4/3]">
                 {activeIntro?.image ? (
                   <img
                     src={activeIntro.image}
                     alt={activeIntro.title || 'Industrial Plant Automation'}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-2"
                   />
                 ) : (
                   <div className="w-full h-full bg-slate-800/20" />
@@ -514,7 +606,7 @@ export default function Home() {
                   <img
                     src={item.image}
                     alt={item.title || ''}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
                 ) : (
@@ -574,6 +666,198 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Submit a Review Block */}
+          <div className="mt-20 pt-16 border-t border-slate-200/60 text-xs">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              {/* Left Column: Info/CTA */}
+              <div className="lg:col-span-5 space-y-6">
+                <span className="text-[10px] font-bold text-brand-teal uppercase tracking-widest bg-brand-teal/10 px-3 py-1.5 rounded-lg border border-brand-teal/20">
+                  Share Your Feedback
+                </span>
+                <h3 className="font-display font-extrabold text-2xl md:text-3xl text-slate-900 tracking-tight leading-tight">
+                  We Value Your Experience
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Your feedback helps us continuously improve our systems engineering, custom panel designs, and software integration services. Share your thoughts and rate your experience with us!
+                </p>
+                <div className="bg-white border border-slate-200/50 rounded-2xl p-6 space-y-4 shadow-xs">
+                  <h4 className="font-bold text-slate-900 text-xs">Submission Details:</h4>
+                  <ul className="space-y-3 text-[11px] text-slate-500">
+                    <li className="flex items-start gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal font-extrabold text-[10px]">1</span>
+                      <span>Fill in your name, company, and choose a star rating from 1 to 5.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal font-extrabold text-[10px]">2</span>
+                      <span>Write a brief review about your experience with our products or team.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal font-extrabold text-[10px]">3</span>
+                      <span>(Optional) Upload a profile image or company logo for verification.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Right Column: Form */}
+              <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/60 p-6 sm:p-8 shadow-sm">
+                <form onSubmit={handleReviewSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Client Name */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-slate-700 uppercase">
+                        Client Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. John Doe"
+                        value={formClientName}
+                        onChange={(e) => setFormClientName(e.target.value)}
+                        className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white focus:border-brand-teal transition-all text-xs"
+                      />
+                    </div>
+
+                    {/* Company Name */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-slate-700 uppercase">
+                        Company Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. L&T Heavy Industry"
+                        value={formCompanyName}
+                        onChange={(e) => setFormCompanyName(e.target.value)}
+                        className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white focus:border-brand-teal transition-all text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Rating Selector */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase">
+                      Rating <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setFormRating(star)}
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          className="cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              star <= (hoverRating || formRating)
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-slate-200'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-xs font-bold text-slate-500 ml-2">
+                        {formRating} Star{formRating > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Review Text */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase">
+                      Review <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      placeholder="Share your experience working with Skylake Automation..."
+                      value={formReview}
+                      onChange={(e) => setFormReview(e.target.value)}
+                      className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white focus:border-brand-teal transition-all resize-none text-xs"
+                    />
+                  </div>
+
+                  {/* Image Upload */}
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-bold text-slate-700 uppercase">
+                      Profile Image (Optional)
+                    </label>
+                    
+                    <div className="flex items-center gap-4">
+                      {/* Custom upload button */}
+                      <label className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl cursor-pointer transition-all font-semibold text-xs shadow-2xs">
+                        <Upload className="w-4 h-4 text-brand-teal" />
+                        <span>Choose File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleReviewFileChange}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Image preview */}
+                      {imagePreview ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormImage(null);
+                              setImagePreview('');
+                            }}
+                            className="text-[10px] text-red-500 hover:underline font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          No file selected
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Message Banner */}
+                  {submitMessage && (
+                    <div
+                      className={`p-4 rounded-xl text-xs font-semibold border ${
+                        submitMessage.type === 'success'
+                          ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                          : 'bg-red-50 border-red-100 text-red-700'
+                      }`}
+                    >
+                      {submitMessage.text}
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={reviewSubmitLoading}
+                    className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70 transition-all text-xs shadow-md shadow-slate-900/10 hover:shadow-lg"
+                  >
+                    {reviewSubmitLoading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Submitting Review...</span>
+                      </>
+                    ) : (
+                      <span>Submit Review</span>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
 
         </div>

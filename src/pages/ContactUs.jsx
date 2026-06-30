@@ -1,10 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import api from '../services/api';
-import ReCAPTCHA from 'react-google-recaptcha';
 
-export default function ContactUs() {
+function ContactUsContent() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,8 +18,6 @@ export default function ContactUs() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState(null);
-  const recaptchaRef = useRef(null);
 
   const validate = () => {
     const newErrors = {};
@@ -34,14 +34,8 @@ export default function ContactUs() {
     } else if (!phoneRegex.test(formData.phone.replace(/[\s-+()]/g, ''))) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
-    }
     if (!formData.message.trim()) {
       newErrors.message = 'Please write your message';
-    }
-    if (!recaptchaToken) {
-      newErrors.recaptcha = 'Please verify you are not a robot';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -57,10 +51,18 @@ export default function ContactUs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      console.log('Validation failed:', errors);
+      return;
+    }
 
     setIsSubmitting(true);
     try {
+      // Generate reCAPTCHA v3 token
+      console.log('Generating reCAPTCHA token...');
+      const recaptchaToken = await executeRecaptcha('contact_form_submit');
+      console.log('reCAPTCHA token received:', recaptchaToken);
+
       // Trim inputs before sending
       const payload = {
         name: formData.name.trim(),
@@ -70,19 +72,24 @@ export default function ContactUs() {
         message: formData.message.trim(),
         recaptcha_token: recaptchaToken,
       };
+      console.log('Sending payload:', payload);
       const response = await api.post('/contact', payload);
+      console.log('API response:', response);
       if (response?.data?.success) {
         setIsSubmitted(true);
         // Reset form after success
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-        if (recaptchaRef.current) recaptchaRef.current.reset();
-        setRecaptchaToken(null);
       } else {
         setErrors((prev) => ({ ...prev, api: response?.data?.message || 'Submission failed.' }));
       }
     } catch (err) {
       console.error('Contact submission error:', err);
-      setErrors((prev) => ({ ...prev, api: err.response?.data?.message || 'An error occurred while sending.' }));
+      console.error('Error details:', {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+      setErrors((prev) => ({ ...prev, api: err.response?.data?.message || err.message || 'An error occurred while sending.' }));
     } finally {
       setIsSubmitting(false);
     }
@@ -273,25 +280,6 @@ export default function ContactUs() {
                     {errors.message && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.message}</p>}
                   </div>
 
-                  {/* reCAPTCHA v2 Checkbox */}
-                  <div>
-                    <ReCAPTCHA
-                      ref={recaptchaRef}
-                      sitekey={import.meta.env.VITE_GOOGLE_SITE_KEY}
-                      onChange={(token) => {
-                        setRecaptchaToken(token);
-                        setErrors((prev) => ({
-                          ...prev,
-                          recaptcha: '',
-                        }));
-                      }}
-                      onExpired={() => {
-                        setRecaptchaToken(null);
-                      }}
-                    />
-                    {errors.recaptcha && <p className="text-red-500 text-[10px] mt-2 font-semibold">{errors.recaptcha}</p>}
-                  </div>
-
                   {/* Submit Button */}
                   <button
                     type="submit"
@@ -318,7 +306,7 @@ export default function ContactUs() {
                     Message Dispatched Successfully!
                   </h3>
                   <p className="text-xs text-slate-500 leading-relaxed mt-2 max-w-sm">
-                    Thank you for reaching out, {formData.name}. Our systems engineer will review your request regarding <strong className="text-slate-800">"{formData.subject || 'PLC/HMI Controls System Upgrade'}"</strong> and get back to you within 4-6 business hours.
+                    Thank you for reaching out. Our systems engineer will review your request regarding and get back to you within 4-6 business hours.
                   </p>
                   <button
                     onClick={() => setIsSubmitted(false)}
@@ -340,5 +328,13 @@ export default function ContactUs() {
 
 
     </main>
+  );
+}
+
+export default function ContactUs() {
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}>
+      <ContactUsContent />
+    </GoogleReCaptchaProvider>
   );
 }

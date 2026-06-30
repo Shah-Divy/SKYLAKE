@@ -19,6 +19,14 @@ export const blogService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/blogs', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapBlog);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/blogs/${id}`);
     if (response.data && response.data.success && response.data.data) {

@@ -25,6 +25,14 @@ export const bannerService = {
     return response.data;
   },
 
+  getAllAdmin: async () => {
+    const response = await api.get('/admin/banners');
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapBanner);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/banners/${id}`);
     if (response.data && response.data.success && response.data.data) {

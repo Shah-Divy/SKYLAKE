@@ -65,6 +65,19 @@ export const productService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/products', { params });
+    if (response.data && response.data.success) {
+      if (Array.isArray(response.data.data)) {
+        response.data.data = response.data.data.map(mapProduct);
+      }
+      if (response.data.pagination) {
+        response.data.pagination.pages = response.data.pagination.total_pages || response.data.pagination.pages;
+      }
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/products/${id}`);
     if (response.data && response.data.success && response.data.data) {

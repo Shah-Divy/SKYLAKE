@@ -44,7 +44,7 @@ export default function ContactUs() {
       newErrors.recaptcha = 'Please verify you are not a robot';
     }
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;                                                                             
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (e) => {
@@ -68,7 +68,7 @@ export default function ContactUs() {
         phone: formData.phone.trim(),
         subject: formData.subject,
         message: formData.message.trim(),
-        recaptchaToken,
+        recaptcha_token: recaptchaToken,
       };
       const response = await api.post('/contact', payload);
       if (response?.data?.success) {
@@ -90,7 +90,7 @@ export default function ContactUs() {
 
   return (
     <main className="w-full pt-20">
-      
+
       {/* Header Banner */}
       <section className="bg-slate-950 py-16 text-white text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
@@ -106,12 +106,12 @@ export default function ContactUs() {
       {/* Main Details and Form Segment */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-stretch">
-            
+
             {/* LEFT: Info & Details Cards (Grid col 5) */}
             <div className="lg:col-span-5 space-y-8 flex flex-col justify-between">
-              
+
               <div className="space-y-6">
                 <span className="text-[10px] font-bold text-brand-teal uppercase tracking-widest bg-brand-teal/10 px-3 py-1.5 rounded-lg border border-brand-teal/20">
                   Get In Touch
@@ -126,7 +126,7 @@ export default function ContactUs() {
 
               {/* Info Widgets Grid */}
               <div className="grid grid-cols-1 gap-4 pt-6">
-                
+
                 {/* Card 1: Office Address */}
                 <div className="flex gap-4 p-5 bg-brand-slate-light border border-slate-100 rounded-2xl">
                   <div className="bg-white p-3 rounded-xl border border-slate-50 text-brand-teal flex items-center justify-center shrink-0">
@@ -179,13 +179,13 @@ export default function ContactUs() {
 
             {/* RIGHT: Contact Form (Grid col 7) */}
             <div className="lg:col-span-7 bg-brand-slate-light p-6 sm:p-10 rounded-3xl border border-slate-100">
-              
+
               {!isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <h3 className="font-display font-extrabold text-lg text-slate-950 mb-6">
                     Request Component Quote / Consultation
                   </h3>
-                  
+
                   {/* Name Input */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -196,9 +196,8 @@ export default function ContactUs() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${
-                        errors.name ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
-                      }`}
+                      className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
+                        }`}
                       placeholder="John Doe"
                     />
                     {errors.name && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.name}</p>}
@@ -215,9 +214,8 @@ export default function ContactUs() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${
-                          errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
-                        }`}
+                        className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${errors.email ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
+                          }`}
                         placeholder="john@company.com"
                       />
                       {errors.email && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.email}</p>}
@@ -232,9 +230,8 @@ export default function ContactUs() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${
-                          errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
-                        }`}
+                        className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:ring-1 transition-colors ${errors.phone ? 'border-red-500 focus:ring-red-500' : 'border-slate-200 focus:border-brand-teal'
+                          }`}
                         placeholder="9876543210"
                       />
                       {errors.phone && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.phone}</p>}
@@ -269,9 +266,8 @@ export default function ContactUs() {
                       rows={5}
                       value={formData.message}
                       onChange={handleInputChange}
-                      className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:border-brand-teal transition-colors resize-none ${
-                        errors.message ? 'border-red-500' : 'border-slate-200'
-                      }`}
+                      className={`w-full bg-white text-slate-900 text-xs px-3.5 py-3 rounded-xl border focus:outline-none focus:border-brand-teal transition-colors resize-none ${errors.message ? 'border-red-500' : 'border-slate-200'
+                        }`}
                       placeholder="Specify model numbers, target quantities, and layout specifications..."
                     />
                     {errors.message && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.message}</p>}
@@ -284,7 +280,13 @@ export default function ContactUs() {
                       sitekey={import.meta.env.VITE_GOOGLE_SITE_KEY}
                       onChange={(token) => {
                         setRecaptchaToken(token);
-                        if (errors.recaptcha) setErrors((prev) => ({ ...prev, recaptcha: '' }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          recaptcha: '',
+                        }));
+                      }}
+                      onExpired={() => {
+                        setRecaptchaToken(null);
                       }}
                     />
                     {errors.recaptcha && <p className="text-red-500 text-[10px] mt-2 font-semibold">{errors.recaptcha}</p>}
@@ -335,7 +337,7 @@ export default function ContactUs() {
       </section>
 
       {/* Google Map Section */}
-      
+
 
     </main>
   );

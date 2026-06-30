@@ -28,7 +28,7 @@ export default function JobManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await jobService.getAll();
+      const response = await jobService.getAllAdmin();
       if (response.success) {
         setJobs(response.data || []);
       } else {
@@ -130,19 +130,16 @@ export default function JobManager() {
   };
 
   const handleToggleStatus = async (item) => {
-    try {
-      const response = await jobService.toggleStatus(item._id);
-      if (response.success) {
-        setJobs(
-          jobs.map((j) =>
-            j._id === item._id ? { ...j, status: j.status === 'active' ? 'inactive' : 'active' } : j
-          )
-        );
-      }
-    } catch (err) {
-      console.error(err);
+  try {
+    const response = await jobService.toggleStatus(item.id);
+
+    if (response.success) {
+      fetchJobs();
     }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div className="space-y-6 text-xs">
@@ -209,7 +206,7 @@ export default function JobManager() {
                 <th className="px-6 py-4">Position Title</th>
                 <th className="px-6 py-4">Experience</th>
                 <th className="px-6 py-4">Location</th>
-                {/* <th className="px-6 py-4">Status</th> */}
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -232,16 +229,16 @@ export default function JobManager() {
                   </td>
                   <td className="px-6 py-4 font-medium">{job.experience}</td>
                   <td className="px-6 py-4 text-slate-500 font-medium">{job.location}</td>
-                  {/* <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <button
                       onClick={() => handleToggleStatus(job)}
                       className={`text-[8px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
-                        job.status === 'active' ? 'text-brand-teal bg-brand-teal/10 hover:bg-brand-teal/20' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
+                        job.status === true ? 'text-brand-teal bg-brand-teal/10 hover:bg-brand-teal/20' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
                       }`}
                     >
-                      {job.status === 'active' ? 'Active' : 'Inactive'}
+                      {job.status === true ? 'Active' : 'Inactive'}
                     </button>
-                  </td> */}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <button

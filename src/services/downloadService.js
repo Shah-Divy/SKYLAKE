@@ -20,6 +20,14 @@ export const downloadService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/downloads', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapDownload);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/downloads/${id}`);
     if (response.data && response.data.success && response.data.data) {

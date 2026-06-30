@@ -31,7 +31,7 @@ export default function NewsManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await newsService.getAll();
+      const response = await newsService.getAllAdmin();
       if (response.success) {
         setNews(response.data || []);
       } else {

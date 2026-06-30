@@ -32,7 +32,7 @@ export default function GalleryManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await galleryService.getAll();
+      const response = await galleryService.getAllAdmin();
       if (response.success) {
         setGallery(response.data || []);
       } else {

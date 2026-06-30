@@ -19,6 +19,14 @@ export const newsService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/news', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapNews);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/admin/news/${id}`);
     if (response.data && response.data.success && response.data.data) {

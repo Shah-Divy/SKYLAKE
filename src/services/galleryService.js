@@ -17,6 +17,14 @@ export const galleryService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/galleries', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapGallery);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/galleries/${id}`);
     if (response.data && response.data.success && response.data.data) {

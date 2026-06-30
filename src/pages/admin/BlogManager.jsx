@@ -31,7 +31,7 @@ export default function BlogManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await blogService.getAll();
+      const response = await blogService.getAllAdmin();
       if (response.success) {
         setBlogs(response.data || []);
       } else {

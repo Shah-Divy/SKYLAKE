@@ -32,7 +32,7 @@ export default function BannerManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await bannerService.getAll();
+      const response = await bannerService.getAllAdmin();
       if (response.success) {
         // Backend returns response.data directly as an array or paginated object. 
         // Based on controller, it returns `new ApiResponse(..., banners, ...)` where data is banners array.

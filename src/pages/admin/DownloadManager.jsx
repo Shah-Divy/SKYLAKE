@@ -30,7 +30,7 @@ export default function DownloadManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await downloadService.getAll();
+      const response = await downloadService.getAllAdmin();
       if (response.success) {
         setDownloads(response.data || []);
       } else {

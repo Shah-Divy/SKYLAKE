@@ -17,6 +17,14 @@ export const jobService = {
     return response.data;
   },
 
+  getAllAdmin: async (params = {}) => {
+    const response = await api.get('/admin/jobs', { params });
+    if (response.data && response.data.success && Array.isArray(response.data.data)) {
+      response.data.data = response.data.data.map(mapJob);
+    }
+    return response.data;
+  },
+
   getById: async (id) => {
     const response = await api.get(`/jobs/${id}`);
     if (response.data && response.data.success && response.data.data) {

@@ -11,15 +11,15 @@ export default function ProductManager() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Search & Filter
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
-  
+
   // Pagination
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -49,7 +49,7 @@ export default function ProductManager() {
   const [formVideo, setFormVideo] = useState('');
   const [formImages, setFormImages] = useState([]); // Multiple files
   const [formPdfFile, setFormPdfFile] = useState(null);
-  
+
   const [imagePreviews, setImagePreviews] = useState([]);
   const [pdfPreviewName, setPdfPreviewName] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -71,7 +71,7 @@ export default function ProductManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await productService.getAll({
+      const response = await productService.getAllAdmin({
         page,
         limit,
         search,
@@ -313,7 +313,7 @@ export default function ProductManager() {
 
   return (
     <div className="space-y-6 text-xs relative">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -336,7 +336,7 @@ export default function ProductManager() {
 
       {/* Table filters */}
       <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center bg-white p-4 rounded-2xl border border-slate-200/50 shadow-sm">
-        
+
         {/* Search */}
         <div className="sm:col-span-5 relative">
           <input
@@ -416,7 +416,7 @@ export default function ProductManager() {
                   <th className="px-6 py-4">Manufacturer</th>
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Price</th>
-                  {/* <th className="px-6 py-4">Status</th> */}
+                  <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -442,16 +442,17 @@ export default function ProductManager() {
                         `$${p.price}`
                       )}
                     </td>
-                    {/* <td className="px-6 py-4">
+                    <td className="px-6 py-4">
                       <button
                         onClick={() => handleToggleStatus(p)}
-                        className={`text-[8px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
-                          p.status === 'active' ? 'text-brand-teal bg-brand-teal/10 hover:bg-brand-teal/20' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
-                        }`}
+                        className={`text-[8px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${p.status
+                            ? 'text-brand-teal bg-brand-teal/10 hover:bg-brand-teal/20'
+                            : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
+                          }`}
                       >
-                        {p.status === 'active' ? 'Active' : 'Inactive'}
+                        {p.status ? 'Active' : 'Inactive'}
                       </button>
-                    </td> */}
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
@@ -516,7 +517,7 @@ export default function ProductManager() {
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
             <div className="absolute inset-0 cursor-default" onClick={() => !submitLoading && setModalOpen(false)} />
-            
+
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -542,9 +543,8 @@ export default function ProductManager() {
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 font-bold capitalize cursor-pointer border-b-2 text-xs ${
-                      activeTab === tab ? 'border-brand-teal text-slate-950' : 'border-transparent text-slate-400'
-                    }`}
+                    className={`px-4 py-2 font-bold capitalize cursor-pointer border-b-2 text-xs ${activeTab === tab ? 'border-brand-teal text-slate-950' : 'border-transparent text-slate-400'
+                      }`}
                   >
                     {tab}
                   </button>
@@ -552,7 +552,7 @@ export default function ProductManager() {
               </div>
 
               <form onSubmit={handleSave} className="space-y-4 text-xs">
-                
+
                 {activeTab === 'general' && (
                   <div className="space-y-4">
                     {/* Name */}
@@ -764,7 +764,7 @@ export default function ProductManager() {
               className="relative w-96 bg-white h-full z-10 p-6 flex flex-col justify-between shadow-2xl border-l border-slate-100 overflow-y-auto text-xs"
             >
               <div className="space-y-6">
-                
+
                 {/* Header title */}
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                   <h3 className="font-display font-extrabold text-sm text-slate-900">

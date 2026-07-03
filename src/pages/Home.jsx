@@ -145,7 +145,7 @@ export default function Home() {
     // paragraph1: profile.mission || '',
     // paragraph2: profile.vision || '',
     achievements: profile.achievements || '',
-    image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=800',
+    image: profile.image ? getFileUrl(profile.image) : 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1920',
     stats: [
       { label: 'Installed Systems', value: '1,200+' },
       { label: 'Global Brands Offered', value: '15+' },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Target, Eye, ShieldCheck, Factory, Award, Users, CheckCircle, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { companyProfileService } from '../services/companyProfileService';
+import { getFileUrl } from '../services/api';
 
 export default function AboutUs() {
   const [profile, setProfile] = useState(null);
@@ -63,11 +64,12 @@ export default function AboutUs() {
             {/* Visual illustration image */}
             <div className="relative">
               <div className="absolute -inset-4 bg-brand-orange/5 rounded-3xl rotate-2" />
-              <div className="relative bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-sm aspect-video md:aspect-[4/3]">
+              <div className="relative bg-slate-50 border border-slate-100 rounded-2xl md:rounded-3xl overflow-hidden shadow-sm p-4 flex items-center justify-center min-h-96">
                 <img
-                  src="https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&q=80&w=800"
-                  alt="Quality assurance verification"
-                  className="w-full h-full object-contain p-2"
+                  src={profile?.image ? getFileUrl(profile.image) : 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1920'}
+                  alt="Company profile"
+                  className="max-w-full max-h-full object-contain"
+                  loading="lazy"
                 />
               </div>
             </div>

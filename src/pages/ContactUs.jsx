@@ -185,7 +185,15 @@ function ContactUsContent() {
             </div>
 
             {/* RIGHT: Contact Form (Grid col 7) */}
-            <div className="lg:col-span-7 bg-brand-slate-light p-6 sm:p-10 rounded-3xl border border-slate-100">
+            <div className="lg:col-span-7 bg-brand-slate-light p-6 sm:p-10 rounded-3xl border border-slate-100 relative">
+              <style>{`
+                .contact-form-container .grecaptcha-badge {
+                  position: static !important;
+                  visibility: hidden !important;
+                }
+              `}</style>
+
+              <div className="contact-form-container">
 
               {!isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -295,6 +303,22 @@ function ContactUsContent() {
                       </>
                     )}
                   </button>
+                  
+                  {/* reCAPTCHA Badge Notice */}
+                  <div className="text-center pt-2">
+                    <p className="text-[9px] text-slate-400 leading-tight">
+                      This site is protected by reCAPTCHA and the Google{' '}
+                      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-brand-teal hover:underline">
+                        Privacy Policy
+                      </a>
+                      {' '}and{' '}
+                      <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-brand-teal hover:underline">
+                        Terms of Service
+                      </a>
+                      {' '}apply.
+                    </p>
+                  </div>
+                  
                   {errors.api && (
                     <p className="text-red-500 text-[10px] mt-2 text-center">{errors.api}</p>
                   )}
@@ -317,6 +341,7 @@ function ContactUsContent() {
                 </div>
               )}
 
+              </div>
             </div>
 
           </div>

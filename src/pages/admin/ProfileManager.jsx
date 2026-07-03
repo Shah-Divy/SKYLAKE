@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Save, FileText, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { companyProfileService } from '../../services/companyProfileService';
+import { getFileUrl } from '../../services/api';
 import HtmlEditor from '../../components/HtmlEditor';
 
 export default function ProfileManager() {
@@ -14,6 +15,10 @@ export default function ProfileManager() {
   const [mission, setMission] = useState('');
   const [vision, setVision] = useState('');
   const [achievements, setAchievements] = useState('');
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -25,6 +30,8 @@ export default function ProfileManager() {
         setMission(response.data.mission || '');
         setVision(response.data.vision || '');
         setAchievements(response.data.achievements || '');
+        setImage(response.data.image || null);
+        setImagePreview(response.data.image ? getFileUrl(response.data.image) : '');
       } else {
         setErrorMsg('Failed to fetch company profile.');
       }
@@ -71,6 +78,49 @@ export default function ProfileManager() {
       setErrorMsg('An error occurred while saving corporate identity settings.');
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleImageUpload = async (e) => {
+    e.preventDefault();
+    if (!imageFile) {
+      alert('Please choose an image to upload.');
+      return;
+    }
+    setUploadLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      // Use existing update endpoint to send image along with profile data
+      const payload = {
+        companyProfile,
+        mission,
+        vision,
+        achievements,
+        imageFile,
+      };
+      const response = await companyProfileService.update(payload);
+      if (response.success && response.data) {
+        setImage(response.data.image || null);
+        setImagePreview(response.data.image ? getFileUrl(response.data.image) : '');
+        setImageFile(null);
+        setSuccessMsg('Profile image updated successfully!');
+        setTimeout(() => setSuccessMsg(''), 4000);
+      } else {
+        setErrorMsg(response.message || 'Failed to upload image.');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('An error occurred while uploading the image.');
+    } finally {
+      setUploadLoading(false);
     }
   };
 
@@ -124,6 +174,34 @@ export default function ProfileManager() {
             <Building2 className="w-4.5 h-4.5 text-brand-teal" />
             Intro Content Settings
           </h3>
+
+          {/* Image preview & upload */}
+          <div className="flex items-start gap-6">
+            <div className="w-36 h-36 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
+              {imagePreview ? (
+                <img src={imagePreview} alt="Company" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-xs text-slate-400 px-3 text-center">No image uploaded</div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Company Image (Optional)</label>
+              <div className="mb-3">
+                <label className="inline-block bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs cursor-pointer transition-colors">
+                  <input type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+                  Choose File
+                </label>
+                {imagePreview && <span className="ml-2 text-xs text-emerald-600 font-semibold">File selected ✓</span>}
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={handleImageUpload} disabled={uploadLoading} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs disabled:opacity-60 transition-colors">
+                  {uploadLoading ? 'Uploading...' : 'Upload Image'}
+                </button>
+                <span className="text-xs text-slate-500">Recommended: 800×800 px, JPG/PNG</span>
+              </div>
+            </div>
+          </div>
 
           {/* Primary Profile description */}
           <div>

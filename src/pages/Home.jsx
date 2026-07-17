@@ -173,6 +173,7 @@ export default function Home() {
     role: 'VP of Manufacturing',
     company: t.companyName,
     content: t.review,
+    rating: Number(t.rating) || 5,
     image: getFileUrl(t.profileImage) || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'
   });
 
@@ -324,7 +325,7 @@ export default function Home() {
   };
 
   return (
-    <main className="w-full">
+    <main className="w-full pt-20">
       
       {/* SECTION A: Hero Banner Slider */}
       <section className="relative h-[55vh] sm:h-[70vh] md:h-[85vh] lg:h-[90vh] bg-slate-950 overflow-hidden">
@@ -350,13 +351,13 @@ export default function Home() {
                       loop
                       muted
                       playsInline
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
                     <img
                       src={slide.url}
                       alt={slide.title}
-                      className="w-full h-full object-contain md:object-cover"
+                      className="w-full h-full object-contain"
                     />
                   )}
                 </div>
@@ -524,12 +525,12 @@ export default function Home() {
             {/* Intro Visual Image */}
             <div className="relative">
               <div className="absolute -inset-4 bg-brand-teal/5 rounded-3xl -rotate-2" />
-              <div className="relative bg-slate-50 border border-slate-100 rounded-3xl overflow-hidden shadow-sm aspect-video md:aspect-[4/3]">
+              <div className="relative rounded-3xl overflow-hidden aspect-video md:aspect-[4/3]">
                 {activeIntro?.image ? (
                   <img
                     src={activeIntro.image}
                     alt={activeIntro.title || 'Industrial Plant Automation'}
-                    className="w-full h-full object-contain p-2"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full bg-slate-800/20" />
@@ -648,6 +649,18 @@ export default function Home() {
             {testimonials.filter(Boolean).map((t) => (
               <div key={t.id || t._id} className="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-between shadow-sm">
                 <div>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          star <= (t.rating || 5)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
                   <p className="text-xs text-slate-500 italic leading-relaxed mb-6">
                     "{t.content}"
                   </p>

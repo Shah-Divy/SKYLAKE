@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, Clock, Eye, Trash2, X, AlertTriangle, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, Phone, Clock, Eye, Trash2, X, AlertTriangle, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { inquiryService } from '../../services/inquiryService';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -21,6 +21,42 @@ export default function InquiryManager() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleExportCSV = async () => {
+    try {
+      const response = await inquiryService.getAll({ page: 1, limit: 10000 });
+      if (response && response.success && response.data) {
+        const dataToExport = response.data;
+        const headers = ['Client Name', 'Email Address', 'Phone Number', 'Message', 'Inquiry Date'];
+        const csvRows = [
+          headers.join(','),
+          ...dataToExport.map(inq => {
+            const name = `"${(inq.name || '').replace(/"/g, '""')}"`;
+            const email = `"${(inq.email || '').replace(/"/g, '""')}"`;
+            const phone = `"${(inq.phone || '').replace(/"/g, '""')}"`;
+            const message = `"${(inq.message || '').replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+            const date = `"${new Date(inq.createdAt).toLocaleString()}"`;
+            return [name, email, phone, message, date].join(',');
+          })
+        ];
+        
+        const csvString = csvRows.join('\r\n');
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Client_Inquiries_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert('Failed to fetch inquiries for export.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while exporting data.');
+    }
+  };
 
   const fetchInquiries = async () => {
     setLoading(true);
@@ -97,13 +133,22 @@ export default function InquiryManager() {
             Client Inquiry Records
           </h1>
         </div>
-        <button
-          onClick={fetchInquiries}
-          className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-600 cursor-pointer shadow-sm animate-none"
-          title="Reload Inquiries"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export to Excel
+          </button>
+          <button
+            onClick={fetchInquiries}
+            className="p-2.5 bg-white hover:bg-slate-50 border border-slate-200/60 rounded-xl text-slate-600 cursor-pointer shadow-sm animate-none"
+            title="Reload Inquiries"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Search and filters */}
@@ -149,6 +194,7 @@ export default function InquiryManager() {
                   {/* <th className="px-6 py-4">Subject</th> */}
                   <th className="px-6 py-4">Email Address</th>
                   <th className="px-6 py-4">Phone Number</th>
+                  <th className="px-6 py-4">Message</th>
                   <th className="px-6 py-4">Inquiry Date</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -160,6 +206,7 @@ export default function InquiryManager() {
                     {/* <td className="px-6 py-4 text-slate-700 font-semibold truncate max-w-[150px]">{inq.subject || 'N/A'}</td> */}
                     <td className="px-6 py-4 font-semibold text-slate-600">{inq.email}</td>
                     <td className="px-6 py-4 text-slate-500 font-medium font-mono">{inq.phone}</td>
+                    <td className="px-6 py-4 text-slate-500 font-medium truncate max-w-[200px]" title={inq.message}>{inq.message}</td>
                     <td className="px-6 py-4 font-mono font-medium text-slate-600">
                       {new Date(inq.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>

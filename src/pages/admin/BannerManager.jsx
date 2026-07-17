@@ -61,7 +61,7 @@ export default function BannerManager() {
     setFormTitle('');
     setFormMediaType('image');
     setFormCTAText('View Products');
-    setFormCTAUrl('/products');
+    setFormCTAUrl('https://3ark.in/products');
     setFormOrder('0');
     setFormFile(null);
     setPreviewUrl('');
@@ -73,7 +73,7 @@ export default function BannerManager() {
     setFormTitle(banner.title);
     setFormMediaType(banner.mediaType || 'image');
     setFormCTAText(banner.ctaText || '');
-    setFormCTAUrl(banner.ctaUrl || '');
+    setFormCTAUrl(banner.ctaUrl || 'https://3ark.in/');
     setFormOrder(String(banner.order || 0));
     setFormFile(null);
     setPreviewUrl(banner.mediaUrl || '');
@@ -96,6 +96,20 @@ export default function BannerManager() {
       return;
     }
 
+    const ensurePrefix = (url) => {
+      if (!url) return 'https://3ark.in';
+      const trimmed = url.trim();
+      if (trimmed.startsWith('https://3ark.in')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('/')) {
+        return `https://3ark.in${trimmed}`;
+      }
+      return `https://3ark.in/${trimmed}`;
+    };
+
+    const finalCtaUrl = ensurePrefix(formCTAUrl);
+
     setSubmitLoading(true);
     try {
       let response;
@@ -103,7 +117,7 @@ export default function BannerManager() {
         const payload = {
           title: formTitle,
           cta_text: formCTAText || '',
-          cta_url: formCTAUrl || '',
+          cta_url: finalCtaUrl,
           order: parseInt(formOrder) || 0,
           status: currentBanner.status === 'active',
           media_type: currentBanner.mediaType || 'image',
@@ -115,7 +129,7 @@ export default function BannerManager() {
         formData.append('title', formTitle);
         formData.append('media_type', formMediaType);
         formData.append('cta_text', formCTAText || '');
-        formData.append('cta_url', formCTAUrl || '');
+        formData.append('cta_url', finalCtaUrl);
         formData.append('order', formOrder);
         formData.append('status', '1');
         formData.append('media_file', formFile);

@@ -186,12 +186,6 @@ function ContactUsContent() {
 
             {/* RIGHT: Contact Form (Grid col 7) */}
             <div className="lg:col-span-7 bg-brand-slate-light p-6 sm:p-10 rounded-3xl border border-slate-100 relative">
-              <style>{`
-                .contact-form-container .grecaptcha-badge {
-                  position: static !important;
-                  visibility: hidden !important;
-                }
-              `}</style>
 
               <div className="contact-form-container">
 
@@ -288,6 +282,11 @@ function ContactUsContent() {
                     {errors.message && <p className="text-red-500 text-[10px] mt-1 font-semibold">{errors.message}</p>}
                   </div>
 
+                  {/* reCAPTCHA Badge Container */}
+                  <div className="flex justify-center mb-4">
+                    <div id="recaptcha-badge-container" />
+                  </div>
+
                   {/* Submit Button */}
                   <button
                     type="submit"
@@ -358,7 +357,15 @@ function ContactUsContent() {
 
 export default function ContactUs() {
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}>
+    <GoogleReCaptchaProvider
+      reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+      container={{
+        element: 'recaptcha-badge-container',
+        parameters: {
+          badge: 'inline'
+        }
+      }}
+    >
       <ContactUsContent />
     </GoogleReCaptchaProvider>
   );

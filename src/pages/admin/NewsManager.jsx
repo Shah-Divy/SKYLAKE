@@ -237,7 +237,7 @@ export default function NewsManager() {
             >
               {/* Visual Screen */}
               <div className="relative pt-[56.25%] bg-slate-50 border-b overflow-hidden">
-                <img src={getFileUrl(item.image)} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={getFileUrl(item.image)} alt={item.title} className="absolute inset-0 w-full h-full object-contain" />
                 <button
                   onClick={() => handleToggleStatus(item)}
                   className={`absolute top-3 right-3 p-1.5 rounded-lg text-white font-extrabold text-[8px] uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-lg ${
@@ -363,7 +363,7 @@ export default function NewsManager() {
                 {/* Image Preview */}
                 {previewUrl && (
                   <div className="border border-slate-100 rounded-xl overflow-hidden bg-slate-50 relative pt-[40%]">
-                    <img src={getFileUrl(previewUrl)} className="absolute inset-0 w-full h-full object-cover" alt="Preview" />
+                    <img src={getFileUrl(previewUrl)} className="absolute inset-0 w-full h-full object-contain" alt="Preview" />
                   </div>
                 )}
 

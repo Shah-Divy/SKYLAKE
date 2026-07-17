@@ -157,11 +157,11 @@ export default function BlogDetails() {
               </div>
 
               {/* Cover Photo */}
-              <div className="relative pt-[56.25%] bg-slate-950 rounded-2xl overflow-hidden shadow-sm">
+              <div className="w-full rounded-2xl overflow-hidden shadow-sm">
                 <img
                   src={image}
                   alt={title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="w-full h-auto block"
                 />
               </div>
 
@@ -186,70 +186,6 @@ export default function BlogDetails() {
                 </p> */}
 
             </article>
-
-            {/* RIGHT: Sidebar Widgets (Col 4) */}
-            <aside className="lg:col-span-4 space-y-8 bg-brand-slate-light p-6 rounded-2xl border border-slate-100">
-              
-              {/* Category Widget */}
-              {/* <div className="space-y-4">
-                <h3 className="font-display font-extrabold text-sm text-slate-900 pb-2.5 border-b border-slate-200 flex items-center gap-1.5">
-                  <BookOpen className="w-4 h-4 text-brand-teal" />
-                  Categories
-                </h3>
-                <div className="flex flex-col gap-1.5">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat}
-                      to={`/blog?category=${encodeURIComponent(cat)}`}
-                      className="flex items-center justify-between py-2 px-3 text-xs font-semibold text-slate-600 hover:text-brand-teal hover:bg-slate-50 rounded-lg transition-colors"
-                    >
-                      {cat}
-                    </Link>
-                  ))}
-                </div>
-              </div> */}
-
-              {/* Recent Posts Widget */}
-              {/* <div className="space-y-4">
-                <h3 className="font-display font-extrabold text-sm text-slate-900 pb-2.5 border-b border-slate-200">
-                  Recent Insights
-                </h3>
-                <div className="space-y-4">
-                  {recent.map((postItem) => (
-                    <Link
-                      key={postItem.id}
-                      to={`/blog/${postItem.id}`}
-                      className="block group space-y-1.5"
-                    >
-                      <span className="text-[9px] font-bold text-slate-400 block">{postItem.date}</span>
-                      <h4 className="font-display font-bold text-xs text-slate-800 group-hover:text-brand-teal transition-colors line-clamp-2 leading-snug">
-                        {postItem.title}
-                      </h4>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Brochure Download Promo */}
-              {/* <div className="bg-slate-950 text-white rounded-xl p-5 relative overflow-hidden text-center space-y-4 mt-6">
-                <span className="text-[9px] font-bold text-brand-teal uppercase tracking-widest bg-white/10 px-2 py-1 rounded">
-                  Resources
-                </span>
-                <h4 className="font-display font-bold text-xs">
-                  Looking for parameter manuals?
-                </h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Head over to our downloads center to access free VFD mapping utilities, certificates, and wiring guides.
-                </p>
-                <Link
-                  to="/downloads"
-                  className="block w-full bg-brand-teal hover:bg-brand-teal-dark text-slate-950 font-bold text-xs py-2.5 rounded-lg text-center transition-colors cursor-pointer"
-                >
-                  Download Center
-                </Link>
-              </div> */}
-
-            </aside>
 
           </div>
 

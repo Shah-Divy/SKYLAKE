@@ -117,11 +117,11 @@ export default function NewsDetails() {
             </div>
 
             {/* Featured Image */}
-            <div className="relative pt-[50%] bg-slate-950 rounded-2xl overflow-hidden shadow-md">
+            <div className="w-full rounded-2xl overflow-hidden shadow-md">
               <img
                 src={image}
                 alt={title}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-auto block"
               />
             </div>
 

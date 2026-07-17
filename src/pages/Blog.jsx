@@ -97,11 +97,11 @@ export default function Blog() {
                 className="bg-brand-slate-light border border-slate-100 hover:border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between group h-full"
               >
                 {/* Visual Header */}
-                <div className="pt-[56.25%] relative bg-slate-100 overflow-hidden shrink-0 border-b border-slate-100">
+                <div className="w-full relative overflow-hidden shrink-0 border-b border-slate-100">
                   <img
                     src={post.image}
                     alt={post.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                    className="w-full h-auto block group-hover:scale-103 transition-transform duration-500"
                     loading="lazy"
                   />
                   <div className="absolute bottom-3 left-3 bg-slate-950/90 text-brand-teal text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md">

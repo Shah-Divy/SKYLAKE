@@ -42,6 +42,7 @@ import BlogManager from './pages/admin/BlogManager';
 import DownloadManager from './pages/admin/DownloadManager';
 import InquiryManager from './pages/admin/InquiryManager';
 import Settings from './pages/admin/Settings';
+import PartnerDataManager from './pages/admin/PartnerDataManager';
 
 // Scroll Restoration helper
 function ScrollToTop() {
@@ -118,6 +119,7 @@ function App() {
             <Route path="blogs" element={<BlogManager />} />
             <Route path="downloads" element={<DownloadManager />} />
             <Route path="inquiries" element={<InquiryManager />} />
+            <Route path="partner-data" element={<PartnerDataManager />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

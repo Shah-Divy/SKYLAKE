@@ -16,6 +16,7 @@ import {
   Download,
   Mail,
   Settings,
+  Handshake,
   LogOut,
   Menu,
   ChevronLeft,
@@ -58,6 +59,7 @@ export default function DashboardLayout() {
     { name: 'Blogs', path: '/admin/blogs', icon: <BookOpen className="w-5 h-5" /> },
     { name: 'Downloads', path: '/admin/downloads', icon: <Download className="w-5 h-5" /> },
     { name: 'Inquiries', path: '/admin/inquiries', icon: <Mail className="w-5 h-5" /> },
+    { name: 'Partner Data', path: '/admin/partner-data', icon: <Handshake className="w-5 h-5" /> },
     { name: 'Settings', path: '/admin/settings', icon: <Settings className="w-5 h-5" /> }
   ];
 

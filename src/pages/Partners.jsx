@@ -4,11 +4,14 @@ import { Search, ArrowRight, Award, ShieldAlert, Cpu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { mockBrands } from '../data/mockData';
 import { brandService } from '../services/brandService';
+import { systemService } from '../services/systemService';
 import { getFileUrl } from '../services/api';
 
 export default function Partners() {
   const [searchQuery, setSearchQuery] = useState('');
   const [brands, setBrands] = useState([]);
+  const [systemInfo, setSystemInfo] = useState(null);
+  const [systemError, setSystemError] = useState('');
 
   useEffect(() => {
     const fetchBrands = async () => {
@@ -21,7 +24,23 @@ export default function Partners() {
         console.error('Error fetching brands:', err);
       }
     };
+
+    const fetchSystemData = async () => {
+      try {
+        const response = await systemService.getSystemData();
+        if (response.success && response.data) {
+          setSystemInfo(response.data);
+        } else {
+          setSystemError(response.message || 'Failed to load partner section data.');
+        }
+      } catch (err) {
+        console.error('Error fetching system data:', err);
+        setSystemError(err?.response?.data?.message || 'Unable to load partner section data from the server.');
+      }
+    };
+
     fetchBrands();
+    fetchSystemData();
   }, []);
 
   const mapBrand = (b) => ({
@@ -50,10 +69,10 @@ export default function Partners() {
             Official Alliances
           </span>
           <h1 className="font-display font-extrabold text-3xl md:text-5xl text-white tracking-tight leading-none text-glow-teal">
-            Authorized Integration Partners & Brands
+            {systemInfo?.title || 'Authorized Integration Partners & Brands'}
           </h1>
           <p className="text-xs text-slate-400 max-w-xl mx-auto">
-            We partner with leading global hardware developers to offer genuine products, direct warranties, and certified engineering integrations.
+            {systemInfo?.description || 'We partner with leading global hardware developers to offer genuine products, direct warranties, and certified engineering integrations.'}
           </p>
         </div>
       </section>
@@ -148,13 +167,13 @@ export default function Partners() {
             
             <div className="relative z-10 max-w-3xl space-y-6">
               <span className="inline-block text-[9px] font-bold text-brand-teal uppercase tracking-widest bg-brand-teal/10 px-2.5 py-1 rounded-md">
-                Systems Engineering
+                {systemInfo?.title || 'Systems Engineering'}
               </span>
               <h3 className="font-display font-extrabold text-xl md:text-3xl text-white tracking-tight leading-tight">
-                Need Multi-Brand Hardware Configurations?
+                {systemInfo?.description || 'Need Multi-Brand Hardware Configurations?'}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
-                Our engineers excel at cross-brand integration. We program PLC systems that communicate across Siemens S7-1500 to Rockwell HMIs and FANUC robotics via OPC UA and Ethernet/IP protocols. Let us build a unified solution block matching your factory’s layout.
+                {systemInfo?.data || 'Our engineers excel at cross-brand integration. We program PLC systems that communicate across Siemens S7-1500 to Rockwell HMIs and FANUC robotics via OPC UA and Ethernet/IP protocols. Let us build a unified solution block matching your factory’s layout.'}
               </p>
 
               <div className="flex flex-wrap gap-4 pt-2">
@@ -162,14 +181,14 @@ export default function Partners() {
                   to="/contact"
                   className="bg-brand-orange hover:bg-brand-orange-dark text-white font-extrabold text-xs px-6 py-3.5 rounded-xl shadow-lg transition-colors flex items-center gap-1.5"
                 >
-                  Consult Integration Engineer
+                  {systemInfo?.button_1 || 'Consult Integration Engineer'}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   to="/downloads"
                   className="bg-white/10 hover:bg-white/15 text-white font-extrabold text-xs px-6 py-3.5 rounded-xl transition-all border border-white/5"
                 >
-                  Download Tech Manuals
+                  {systemInfo?.button_2 || 'Download Tech Manuals'}
                 </Link>
               </div>
             </div>

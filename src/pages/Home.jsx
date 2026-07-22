@@ -27,6 +27,7 @@ export default function Home() {
   // Gallery states
   const [selectedGalleryImg, setSelectedGalleryImg] = useState(null);
   const [selectedGalleryTitle, setSelectedGalleryTitle] = useState('');
+  const [selectedGalleryDescription, setSelectedGalleryDescription] = useState('');
 
   // Careers states
   const [selectedJob, setSelectedJob] = useState(null);
@@ -140,17 +141,17 @@ export default function Home() {
   });
 
   const mapIntro = (profile) => ({
-    title: 'Pioneering the Future of Automation & Control Engineering',
+    title: profile.title || '',
     subtitle: profile.company_profile || '',
     // paragraph1: profile.mission || '',
     // paragraph2: profile.vision || '',
     achievements: profile.achievements || '',
     image: profile.image ? getFileUrl(profile.image) : 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1920',
     stats: [
-      { label: 'Installed Systems', value: '1,200+' },
-      { label: 'Global Brands Offered', value: '15+' },
-      { label: 'Commissioned Engineers', value: '45+' },
-      { label: 'Uptime Reliability', value: '99.9%' }
+      { label: 'Installed Systems', value: profile.installed_system },
+      { label: 'Global Brands Offered', value: profile.brands },
+      { label: 'Commissioned Engineers', value: profile.commissioned },
+      { label: 'Uptime Reliability', value: profile.reliability }
     ]
   });
 
@@ -178,10 +179,11 @@ export default function Home() {
   });
 
   const mapGallery = (g) => ({
-    id: g._id,
+    id: g._id || g.id,
     title: g.title,
     category: 'Infrastructure',
-    image: getFileUrl(g.image)
+    image: getFileUrl(g.image),
+    description: g.description || ''
   });
 
   const mapJob = (j) => ({
@@ -600,6 +602,7 @@ export default function Home() {
                   if (!item) return;
                   setSelectedGalleryImg(item.image || null);
                   setSelectedGalleryTitle(item.title || '');
+                  setSelectedGalleryDescription(item.description || '');
                 }}
                 className="relative overflow-hidden rounded-2xl group cursor-pointer aspect-square bg-slate-100"
               >
@@ -1003,9 +1006,11 @@ export default function Home() {
         <Lightbox
           image={selectedGalleryImg}
           title={selectedGalleryTitle}
+          description={selectedGalleryDescription}
           onClose={() => {
             setSelectedGalleryImg(null);
             setSelectedGalleryTitle('');
+            setSelectedGalleryDescription('');
           }}
         />
       )}

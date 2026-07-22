@@ -19,11 +19,13 @@ export default function GalleryManager() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [currentAsset, setCurrentAsset] = useState(null);
   const [formEditTitle, setFormEditTitle] = useState('');
+  const [formEditDescription, setFormEditDescription] = useState('');
   const [formEditStatus, setFormEditStatus] = useState(true);
   const [editSubmitLoading, setEditSubmitLoading] = useState(false);
 
   // Form states
   const [inputTitle, setInputTitle] = useState('');
+  const [inputDescription, setInputDescription] = useState('');
   const [formFile, setFormFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -73,12 +75,14 @@ export default function GalleryManager() {
     try {
       const formData = new FormData();
       formData.append('title', inputTitle.trim());
+      formData.append('description', inputDescription.trim());
       formData.append('image', formFile); // Field name is 'image' in multer config
 
       const response = await galleryService.create(formData);
       if (response.success) {
         fetchGallery();
         setInputTitle('');
+        setInputDescription('');
         setFormFile(null);
         setPreviewUrl('');
       } else {
@@ -117,7 +121,8 @@ export default function GalleryManager() {
 
   const handleOpenEdit = (item) => {
     setCurrentAsset(item);
-    setFormEditTitle(item.title);
+    setFormEditTitle(item.title || '');
+    setFormEditDescription(item.description || '');
     setFormEditStatus(item.status === true || item.status === 1 || item.status === 'active');
     setEditModalOpen(true);
   };
@@ -133,6 +138,7 @@ export default function GalleryManager() {
     try {
       const payload = {
         title: formEditTitle.trim(),
+        description: formEditDescription.trim(),
         status: formEditStatus,
       };
 
@@ -214,6 +220,17 @@ export default function GalleryManager() {
             </div>
 
             <div>
+              <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Description (Optional)</label>
+              <textarea
+                rows={3}
+                placeholder="e.g. Detailed description of the gallery asset..."
+                value={inputDescription}
+                onChange={(e) => setInputDescription(e.target.value)}
+                className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs resize-none"
+              />
+            </div>
+
+            <div>
               <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Upload Showcase Image</label>
               <input
                 type="file"
@@ -283,7 +300,7 @@ export default function GalleryManager() {
                   <img src={getFileUrl(item.image)} alt={item.title} className="w-full h-full object-cover" />
                   
                   {/* Overlay Action controls */}
-                  <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3.5">
+                  <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3.5">
                     <div className="flex items-center justify-between gap-1 w-full">
                       <span className="text-[9px] font-extrabold text-brand-teal uppercase tracking-wider block">
                         Showcase Cell
@@ -307,26 +324,33 @@ export default function GalleryManager() {
                       </button>
                     </div>
                     
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-bold text-white truncate flex-grow" title={item.title}>
-                        {item.title}
-                      </span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg cursor-pointer border border-slate-700"
-                          title="Edit Photo Title"
-                        >
-                          <Edit2 className="w-3 h-3 text-slate-300" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(item._id)}
-                          className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg cursor-pointer"
-                          title="Remove Photo"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold text-white truncate flex-grow" title={item.title}>
+                          {item.title}
+                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg cursor-pointer border border-slate-700"
+                            title="Edit Photo &amp; Details"
+                          >
+                            <Edit2 className="w-3 h-3 text-slate-300" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(item._id)}
+                            className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg cursor-pointer"
+                            title="Remove Photo"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
+                      {item.description && (
+                        <p className="text-[9px] text-slate-300 line-clamp-2 leading-tight font-medium" title={item.description}>
+                          {item.description}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -383,6 +407,18 @@ export default function GalleryManager() {
                     value={formEditTitle}
                     onChange={(e) => setFormEditTitle(e.target.value)}
                     className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Description</label>
+                  <textarea
+                    rows={3}
+                    value={formEditDescription}
+                    onChange={(e) => setFormEditDescription(e.target.value)}
+                    placeholder="Enter asset description..."
+                    className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs resize-none"
                   />
                 </div>
 

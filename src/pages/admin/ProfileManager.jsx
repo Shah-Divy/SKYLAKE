@@ -15,6 +15,11 @@ export default function ProfileManager() {
   const [mission, setMission] = useState('');
   const [vision, setVision] = useState('');
   const [achievements, setAchievements] = useState('');
+  const [title, setTitle] = useState('');
+  const [installedSystem, setInstalledSystem] = useState('');
+  const [brands, setBrands] = useState('');
+  const [commissioned, setCommissioned] = useState('');
+  const [reliability, setReliability] = useState('');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [imageFile, setImageFile] = useState(null);
@@ -26,10 +31,15 @@ export default function ProfileManager() {
     try {
       const response = await companyProfileService.getAdmin();
       if (response.success && response.data) {
-        setCompanyProfile(response.data.companyProfile || '');
+        setCompanyProfile(response.data.companyProfile || response.data.company_profile || '');
         setMission(response.data.mission || '');
         setVision(response.data.vision || '');
         setAchievements(response.data.achievements || '');
+        setTitle(response.data.title || '');
+        setInstalledSystem(response.data.installed_system || response.data.installedSystem || '');
+        setBrands(response.data.brands || '');
+        setCommissioned(response.data.commissioned || '');
+        setReliability(response.data.reliability || '');
         setImage(response.data.image || null);
         setImagePreview(response.data.image ? getFileUrl(response.data.image) : '');
       } else {
@@ -64,6 +74,11 @@ export default function ProfileManager() {
         mission,
         vision,
         achievements,
+        title,
+        installed_system: installedSystem,
+        brands,
+        commissioned,
+        reliability,
       };
 
       const response = await companyProfileService.update(payload);
@@ -104,6 +119,11 @@ export default function ProfileManager() {
         mission,
         vision,
         achievements,
+        title,
+        installed_system: installedSystem,
+        brands,
+        commissioned,
+        reliability,
         imageFile,
       };
       const response = await companyProfileService.update(payload);
@@ -175,6 +195,18 @@ export default function ProfileManager() {
             Intro Content Settings
           </h3>
 
+          {/* Title Field */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1.5">Profile Title</label>
+            <input
+              type="text"
+              placeholder="e.g. 3Ark Automation Systems"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs font-semibold"
+            />
+          </div>
+
           {/* Image preview & upload */}
           <div className="flex items-start gap-6">
             <div className="w-36 h-36 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
@@ -195,7 +227,7 @@ export default function ProfileManager() {
                 {imagePreview && <span className="ml-2 text-xs text-emerald-600 font-semibold">File selected ✓</span>}
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={handleImageUpload} disabled={uploadLoading} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs disabled:opacity-60 transition-colors">
+                <button type="button" onClick={handleImageUpload} disabled={uploadLoading} className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs disabled:opacity-60 transition-colors">
                   {uploadLoading ? 'Uploading...' : 'Upload Image'}
                 </button>
                 <span className="text-xs text-slate-500">Recommended: 800×800 px, JPG/PNG</span>
@@ -211,6 +243,55 @@ export default function ProfileManager() {
               onChange={setCompanyProfile}
               placeholder="e.g. 3ARK Industrial Automation is a leading system integration company..."
             />
+          </div>
+
+          {/* Key Performance Metrics Grid */}
+          <div className="pt-2">
+            <h4 className="font-display font-extrabold text-xs text-slate-900 uppercase tracking-wider mb-3 pb-1 border-b border-slate-100">
+              Key System & Performance Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Installed Systems</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 500+"
+                  value={installedSystem}
+                  onChange={(e) => setInstalledSystem(e.target.value)}
+                  className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Brands</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 20+"
+                  value={brands}
+                  onChange={(e) => setBrands(e.target.value)}
+                  className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Commissioned</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1000+"
+                  value={commissioned}
+                  onChange={(e) => setCommissioned(e.target.value)}
+                  className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase mb-1">Reliability</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 99.9%"
+                  value={reliability}
+                  onChange={(e) => setReliability(e.target.value)}
+                  className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs font-medium"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Mission & Vision side-by-side */}

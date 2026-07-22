@@ -20,12 +20,23 @@ export const companyProfileService = {
   update: async (data) => {
     // If an image file is provided, send multipart/form-data to the same endpoint
     let response;
+    const titleVal = data.title !== undefined ? data.title : '';
+    const installedSystemVal = data.installed_system !== undefined ? data.installed_system : (data.installedSystem !== undefined ? data.installedSystem : '');
+    const brandsVal = data.brands !== undefined ? data.brands : '';
+    const commissionedVal = data.commissioned !== undefined ? data.commissioned : '';
+    const reliabilityVal = data.reliability !== undefined ? data.reliability : '';
+
     if (data.imageFile) {
       const form = new FormData();
-      form.append('company_profile', data.companyProfile);
-      form.append('mission', data.mission);
-      form.append('vision', data.vision);
-      form.append('achievements', data.achievements);
+      form.append('company_profile', data.companyProfile || '');
+      form.append('mission', data.mission || '');
+      form.append('vision', data.vision || '');
+      form.append('achievements', data.achievements || '');
+      form.append('title', titleVal);
+      form.append('installed_system', installedSystemVal);
+      form.append('brands', brandsVal);
+      form.append('commissioned', commissionedVal);
+      form.append('reliability', reliabilityVal);
       form.append('image', data.imageFile);
       form.append('_method', 'PUT');
       response = await api.post('/admin/company-profile', form, {
@@ -33,10 +44,15 @@ export const companyProfileService = {
       });
     } else {
       const payload = {
-        company_profile: data.companyProfile,
-        mission: data.mission,
-        vision: data.vision,
-        achievements: data.achievements,
+        company_profile: data.companyProfile || '',
+        mission: data.mission || '',
+        vision: data.vision || '',
+        achievements: data.achievements || '',
+        title: titleVal,
+        installed_system: installedSystemVal,
+        brands: brandsVal,
+        commissioned: commissionedVal,
+        reliability: reliabilityVal,
         _method: 'PUT',
       };
       response = await api.post('/admin/company-profile', payload);

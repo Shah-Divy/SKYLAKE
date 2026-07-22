@@ -52,7 +52,7 @@ export default function AboutUs() {
                 Company Profile
               </span>
               <h2 className="font-display font-extrabold text-2xl md:text-4xl text-slate-900 tracking-tight leading-tight">
-                Corporate Profile & Heritage
+                {profile?.title || ''}
               </h2>
               <div 
                 className="text-xs text-slate-500 leading-relaxed rich-text-content"

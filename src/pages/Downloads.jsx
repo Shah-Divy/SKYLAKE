@@ -7,6 +7,7 @@ import { getFileUrl } from '../services/api';
 export default function Downloads() {
   const [downloads, setDownloads] = useState([]);
   const [downloadCounts, setDownloadCounts] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
   const getIcon = (cat) => {
@@ -24,11 +25,57 @@ export default function Downloads() {
     }
   };
 
-  const handleDownloadTrigger = (item) => {
+  const handleDownloadTrigger = async (item) => {
+    // Require that user has submitted the contact form before allowing downloads
+    let contactFlag = null;
+    try {
+      contactFlag = localStorage.getItem('contact_form_submitted');
+    } catch (err) {
+      console.warn('Could not read localStorage for contact flag', err);
+    }
+
+    if (!contactFlag) {
+      try {
+        const Swal = (await import('sweetalert2')).default;
+        const result = await Swal.fire({
+          title: 'Please submit the contact form',
+          text: 'You must fill out the Contact Us form before downloading files.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Go to Contact',
+          cancelButtonText: 'Cancel'
+        });
+        if (result.isConfirmed) {
+          window.location.href = '/contact';
+        }
+      } catch (err) {
+        // fallback if SweetAlert2 is not installed
+        if (confirm('You must submit the contact form before downloading. Go to Contact page now?')) {
+          window.location.href = '/contact';
+        }
+      }
+      return;
+    }
+
     // Open zip file in new tab and increment local counter
     const url = item.zip_file || item.zipFile || getFileUrl(item.zip_file || item.zipFile || '');
     if (url) window.open(url, '_blank');
     setDownloadCounts((prev) => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }));
+
+    // show a small toast indicating download started (optional)
+    try {
+      const Swal = (await import('sweetalert2')).default;
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Download started',
+        showConfirmButton: false,
+        timer: 2000
+      });
+    } catch (err) {
+      // ignore
+    }
   };
 
   useEffect(() => {
@@ -87,64 +134,84 @@ export default function Downloads() {
               <p className="text-xs text-slate-500 mt-4">Loading downloads...</p>
             </div>
           ) : downloads.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {downloads.map((item) => (
-                <motion.div
-                  key={item.id}
-                  whileHover={{ y: -4 }}
-                  className="bg-brand-slate-light p-6 rounded-2xl border border-slate-100 hover:border-slate-200 shadow-sm flex flex-col justify-between"
-                >
-                  <div className="space-y-4">
-                    {/* Header: Icon & Category */}
-                    <div className="flex items-center justify-between">
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-50 shadow-sm">
-                        {getIcon(item.category)}
-                      </div>
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest bg-slate-200/50 px-2 py-0.5 rounded-md">
-                        {item.category}
-                      </span>
-                    </div>
+            <>
+              <div className="max-w-md mx-auto mb-6">
+                <input
+                  type="search"
+                  placeholder="Search downloads by title or description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 text-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white focus:border-brand-teal transition-all text-xs"
+                />
+              </div>
 
-                    {/* Meta Info */}
-                    <div className="space-y-1.5">
-                      <h3 className="font-display font-bold text-sm text-slate-950">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                        {item.description}
-                      </p>
-                      {item.video_link && (
-                        <a
-                          href={item.video_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-brand-teal font-semibold hover:underline mt-2"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          Watch Video
-                        </a>
-                      )}
-                    </div>
-                  </div>
+              {(() => {
+                const q = searchQuery.trim().toLowerCase();
+                const filtered = q
+                  ? downloads.filter((d) => ((d.title || '').toLowerCase().includes(q) || (d.description || '').toLowerCase().includes(q)))
+                  : downloads;
 
-                  {/* Actions & File details */}
-                    <div className="mt-8 pt-4 border-t border-slate-100/60 flex items-center justify-between">
-                      {/* <div className="flex flex-col text-[10px] text-slate-400 font-semibold">
-                         <span>Size: —</span>
-                        <span className="text-slate-400/80">Downloaded {downloadCounts[item.id] || 0} times</span>
-                      </div> */}
-
-                      <button
-                        onClick={() => handleDownloadTrigger(item)}
-                        className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                return filtered.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filtered.map((item) => (
+                      <motion.div
+                        key={item.id}
+                        whileHover={{ y: -4 }}
+                        className="bg-brand-slate-light p-6 rounded-2xl border border-slate-100 hover:border-slate-200 shadow-sm flex flex-col justify-between"
                       >
-                        <Download className="w-3.5 h-3.5" />
-                        Get File
-                      </button>
-                    </div>
-                </motion.div>
-              ))}
-            </div>
+                        <div className="space-y-4">
+                          {/* Header: Icon & Category */}
+                          <div className="flex items-center justify-between">
+                            <div className="bg-white p-2.5 rounded-xl border border-slate-50 shadow-sm">
+                              {getIcon(item.category)}
+                            </div>
+                            <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest bg-slate-200/50 px-2 py-0.5 rounded-md">
+                              {item.category}
+                            </span>
+                          </div>
+
+                          {/* Meta Info */}
+                          <div className="space-y-1.5">
+                            <h3 className="font-display font-bold text-sm text-slate-950">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                              {item.description}
+                            </p>
+                            {item.video_link && (
+                              <a
+                                href={item.video_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-brand-teal font-semibold hover:underline mt-2"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                Watch Video
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions & File details */}
+                        <div className="mt-8 pt-4 border-t border-slate-100/60 flex items-center justify-between">
+                          <button
+                            onClick={() => handleDownloadTrigger(item)}
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            Get File
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 max-w-sm mx-auto">
+                    <p className="text-sm text-slate-500">No downloads match your search.</p>
+                  </div>
+                );
+              })()}
+            </>
           ) : (
             <div className="text-center py-16 max-w-sm mx-auto flex flex-col items-center justify-center">
               <ShieldAlert className="w-12 h-12 text-slate-300 mb-4" />

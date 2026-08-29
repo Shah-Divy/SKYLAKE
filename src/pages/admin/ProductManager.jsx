@@ -299,12 +299,9 @@ export default function ProductManager() {
   const handleToggleStatus = async (product) => {
     try {
       const response = await productService.toggleStatus(product);
-      if (response.success) {
-        setProducts(
-          products.map((p) =>
-            p._id === product._id ? { ...p, status: p.status === 'active' ? 1 : 0 } : p
-          )
-        );
+      if (response && response.success && response.data) {
+        const updated = response.data;
+        setProducts((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
       }
     } catch (err) {
       console.error(err);
@@ -435,11 +432,11 @@ export default function ProductManager() {
                     <td className="px-6 py-4 font-extrabold text-slate-900">
                       {p.discountedPrice ? (
                         <>
-                          <span className="line-through text-slate-400 mr-1.5">${p.price}</span>
-                          <span className="text-emerald-600 font-extrabold">${p.discountedPrice}</span>
+                          <span className="line-through text-slate-400 mr-1.5">₹{p.price}</span>
+                          <span className="text-emerald-600 font-extrabold">₹{p.discountedPrice}</span>
                         </>
                       ) : (
-                        `$${p.price}`
+                        `₹${p.price}`
                       )}
                     </td>
                     <td className="px-6 py-4">

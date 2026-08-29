@@ -77,6 +77,27 @@ function ContactUsContent() {
       console.log('API response:', response);
       if (response?.data?.success) {
         setIsSubmitted(true);
+        // Persist a flag so other pages (like Downloads) can allow gated actions
+        try {
+          localStorage.setItem('contact_form_submitted', JSON.stringify({ ts: Date.now(), name: payload.name, email: payload.email }));
+        } catch (err) {
+          console.warn('Could not set localStorage flag for contact submission', err);
+        }
+        // show success toast if SweetAlert2 is available
+        try {
+          const Swal = (await import('sweetalert2')).default;
+          Swal.fire({
+            icon: 'success',
+            title: 'Message sent',
+            text: 'Your inquiry has been received. We will respond shortly.',
+            timer: 2500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+          });
+        } catch (err) {
+          // ignore — fallback to UI success state already shown
+        }
         // Reset form after success
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       } else {

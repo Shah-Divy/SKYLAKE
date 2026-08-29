@@ -10,7 +10,7 @@ export default function Footer() {
     { name: 'YouTube', icon: <Youtube className="w-4 h-4" />, url: 'https://youtube.com' },
     { name: 'Facebook', icon: <Facebook className="w-4 h-4" />, url: 'https://facebook.com' },
     { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, url: 'https://instagram.com' },
-    { name: 'WhatsApp', icon: <PhoneCall className="w-4 h-4" />, url: 'https://wa.me/919999999999' },
+    // { name: 'WhatsApp', icon: <PhoneCall className="w-4 h-4" />, url: 'https://wa.me/919999999999' },
   ];
 
   return (
@@ -32,7 +32,7 @@ export default function Footer() {
               Authorized industrial systems integrator and engineering consultants. Providing premium automation, motion controllers, switchgears, and process analytics.
             </p> */}
             {/* Social media icons */}
-            {/* <div className="flex gap-2">
+            <div className="flex gap-2">
               {socialLinks.map((soc) => (
                 <a
                   key={soc.name}
@@ -45,7 +45,7 @@ export default function Footer() {
                   {soc.icon}
                 </a>
               ))}
-            </div> */}
+            </div>
           </div>
 
           {/* Column 2: Quick Links */}

@@ -172,10 +172,11 @@ export default function Home() {
     id: t._id,
     name: t.customerName,
     role: 'VP of Manufacturing',
-    company: t.companyName,
+    company: t.companyName || '',
     content: t.review,
     rating: Number(t.rating) || 5,
-    image: getFileUrl(t.profileImage) || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'
+    // keep `image` null when no profile image is provided so we can render a placeholder
+    image: t.profileImage ? getFileUrl(t.profileImage) : null
   });
 
   const mapGallery = (g) => ({
@@ -568,9 +569,13 @@ export default function Home() {
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.filter(Boolean).map((prod) => (
-              <ProductCard key={prod.id || prod._id} product={prod} />
-            ))}
+            {[...products]
+              .filter(Boolean)
+              .sort((a, b) => (b.price || 0) - (a.price || 0))
+              .slice(0, 6)
+              .map((prod) => (
+                <ProductCard key={prod.id || prod._id} product={prod} />
+              ))}
           </div>
 
         </div>
@@ -670,14 +675,20 @@ export default function Home() {
                 </div>
                 
                 <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-50">
-                  <img
-                    src={t.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'}
-                    alt={t.name || 'Customer'}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                  {t.image ? (
+                    <img
+                      src={t.image}
+                      alt={t.name || 'Customer'}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center font-bold font-display border border-slate-200 shadow-sm uppercase">
+                      {t.name?.charAt(0) || 'C'}
+                    </div>
+                  )}
                   <div>
                     <h4 className="text-xs font-bold text-slate-900">{t.name}</h4>
-                    <p className="text-[10px] text-slate-400 font-semibold">{t.role}, {t.company}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold">{t.company}</p>
                   </div>
                 </div>
               </div>

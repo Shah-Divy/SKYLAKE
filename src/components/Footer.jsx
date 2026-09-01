@@ -6,10 +6,10 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4" />, url: 'https://linkedin.com' },
-    { name: 'YouTube', icon: <Youtube className="w-4 h-4" />, url: 'https://youtube.com' },
-    { name: 'Facebook', icon: <Facebook className="w-4 h-4" />, url: 'https://facebook.com' },
-    { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, url: 'https://instagram.com' },
+    { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4" />, url: 'https://linkedin.com/company/3ark-in' },
+    { name: 'YouTube', icon: <Youtube className="w-4 h-4" />, url: 'https://youtube.com/@3ark-in' },
+    { name: 'Facebook', icon: <Facebook className="w-4 h-4" />, url: 'https://facebook.com/3ark.in' },
+    { name: 'Instagram', icon: <Instagram className="w-4 h-4" />, url: 'https://instagram.com/3ark.in' },
     // { name: 'WhatsApp', icon: <PhoneCall className="w-4 h-4" />, url: 'https://wa.me/919999999999' },
   ];
 

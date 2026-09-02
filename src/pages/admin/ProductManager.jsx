@@ -180,53 +180,59 @@ export default function ProductManager() {
     try {
       let response;
       if (currentProduct) {
+        // Update with FormData to support file uploads
         const formData = new FormData();
-        formData.append('_method', 'PUT');
         formData.append('product_name', formName);
         formData.append('model_number', formModel);
-        formData.append('hsn_code', formHSN);
-        formData.append('description', formDesc);
         formData.append('price', formPrice);
+        formData.append('brand_id', formBrand);
+        formData.append('category_id', formCat);
+        
         if (formDiscPrice) {
           formData.append('discounted_price', formDiscPrice);
         }
-        formData.append('brand_id', formBrand);
-        formData.append('category_id', formCat);
-        formData.append('status', currentProduct.status === 'active' ? 1 : 0);
 
-        // Re-attach existing images as File objects so backend file validation passes
-        const existingImages = currentProduct.images || [];
-        for (let i = 0; i < existingImages.length; i++) {
-          try {
-            const imageUrl = getFileUrl(existingImages[i]);
-            const imgResponse = await fetch(imageUrl);
-            const blob = await imgResponse.blob();
-            const ext = existingImages[i].split('.').pop() || 'jpg';
-            const file = new File([blob], `image_${i}.${ext}`, { type: blob.type || 'image/jpeg' });
-            formData.append('images[]', file);
-          } catch (imgErr) {
-            console.warn('Could not fetch existing image:', existingImages[i], imgErr);
+        // Include new images if user selected them, otherwise keep existing images
+        if (formImages.length > 0) {
+          formImages.forEach((img) => {
+            formData.append('images[]', img);
+          });
+        } else {
+          // Re-attach existing images as File objects
+          const existingImages = currentProduct.images || [];
+          for (let i = 0; i < existingImages.length; i++) {
+            try {
+              const imageUrl = getFileUrl(existingImages[i]);
+              const imgResponse = await fetch(imageUrl);
+              const blob = await imgResponse.blob();
+              const ext = existingImages[i].split('.').pop() || 'jpg';
+              const file = new File([blob], `image_${i}.${ext}`, { type: blob.type || 'image/jpeg' });
+              formData.append('images[]', file);
+            } catch (imgErr) {
+              console.warn('Could not fetch existing image:', existingImages[i], imgErr);
+            }
           }
         }
 
-        // Re-attach existing PDF file if present
-        const existingPdf = currentProduct.pdfFile || currentProduct.pdf_file;
-        if (existingPdf) {
+        // Include new PDF file if user selected it, otherwise keep existing
+        if (formPdfFile) {
+          formData.append('pdf_file', formPdfFile);
+        } else if (currentProduct.pdfFile) {
           try {
-            const pdfUrl = getFileUrl(existingPdf);
+            const pdfUrl = getFileUrl(currentProduct.pdfFile);
             const pdfResponse = await fetch(pdfUrl);
             const pdfBlob = await pdfResponse.blob();
             const pdfFile = new File([pdfBlob], 'brochure.pdf', { type: 'application/pdf' });
-            formData.append('pdfFile', pdfFile);
+            formData.append('pdf_file', pdfFile);
           } catch (pdfErr) {
-            console.warn('Could not fetch existing PDF:', existingPdf, pdfErr);
+            console.warn('Could not fetch existing PDF:', currentProduct.pdfFile, pdfErr);
           }
         }
 
-        // Preserve video link
-        const existingVideo = currentProduct.videoLink || currentProduct.video_link || '';
-        if (existingVideo) {
-          formData.append('video_link', existingVideo);
+        // Include video link
+        const videoToSend = formVideo || currentProduct.videoLink || currentProduct.video_link || '';
+        if (videoToSend) {
+          formData.append('video_link', videoToSend);
         }
 
         response = await productService.update(currentProduct._id, formData);
@@ -300,8 +306,8 @@ export default function ProductManager() {
     try {
       const response = await productService.toggleStatus(product);
       if (response && response.success && response.data) {
-        const updated = response.data;
-        setProducts((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
+        // Refresh the product list to get fresh data with brand/category info
+        fetchProducts();
       }
     } catch (err) {
       console.error(err);
@@ -459,13 +465,13 @@ export default function ProductManager() {
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
-                        {/* <button
+                        <button
                           onClick={() => handleOpenEdit(p)}
                           className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-200 cursor-pointer"
                           title="Edit Product"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button> */}
+                        </button>
                         <button
                           onClick={() => handleDeleteClick(p._id)}
                           className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg border border-red-100 cursor-pointer"
@@ -535,7 +541,7 @@ export default function ProductManager() {
 
               {/* Tabs header */}
               <div className="flex border-b border-slate-200">
-                {['general', 'specs', currentProduct ? null : 'media'].filter(Boolean).map((tab) => (
+                {['general', 'specs', 'media'].map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -676,14 +682,20 @@ export default function ProductManager() {
                         onChange={handleImageChange}
                         className="w-full bg-slate-50 text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none text-xs"
                       />
+                      {currentProduct && imagePreviews.length === 0 && (
+                        <p className="text-[10px] text-slate-500 mt-1">Leave empty to keep existing images</p>
+                      )}
                     </div>
 
                     {/* Previews */}
                     {imagePreviews.length > 0 && (
-                      <div className="flex gap-2 overflow-x-auto py-2">
-                        {imagePreviews.map((url, i) => (
-                          <img key={i} src={getFileUrl(url)} className="w-16 h-16 object-cover border rounded-xl" alt="Preview" />
-                        ))}
+                      <div>
+                        <p className="text-[10px] text-slate-500 mb-2">Preview:</p>
+                        <div className="flex gap-2 overflow-x-auto py-2">
+                          {imagePreviews.map((url, i) => (
+                            <img key={i} src={typeof url === 'string' && (url.startsWith('http') || url.startsWith('blob:')) ? url : getFileUrl(url)} className="w-16 h-16 object-cover border rounded-xl" alt="Preview" />
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -704,6 +716,9 @@ export default function ProductManager() {
                           {pdfPreviewName}
                         </div>
                       )}
+                      {currentProduct && !pdfPreviewName && currentProduct.pdfFile && (
+                        <p className="text-[10px] text-slate-500 mt-1">Current: PDF attached - leave empty to keep existing</p>
+                      )}
                     </div>
 
                     {/* Video URL */}
@@ -716,6 +731,9 @@ export default function ProductManager() {
                         className="w-full bg-slate-50 text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:bg-white text-xs"
                         placeholder="https://www.youtube.com/watch?v=..."
                       />
+                      {currentProduct && !formVideo && (currentProduct.videoLink || currentProduct.video_link) && (
+                        <p className="text-[10px] text-slate-500 mt-1">Current: <span className="font-mono text-blue-600">{currentProduct.videoLink || currentProduct.video_link}</span></p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -852,12 +870,12 @@ export default function ProductManager() {
 
               {/* Drawer footer actions */}
               <div className="pt-6 border-t border-slate-100 flex gap-4 mt-8">
-                {/* <button
+                <button
                   onClick={() => { setDrawerOpen(false); handleOpenEdit(currentProduct); }}
-                  className="flex-grow py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 text-center cursor-pointer"
+                  className="flex-grow py-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 text-center cursor-pointer hover:bg-slate-50"
                 >
                   Edit Specifications
-                </button> */}
+                </button>
                 <button
                   onClick={() => handleDeleteClick(currentProduct._id)}
                   className="flex-grow py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold text-center cursor-pointer"

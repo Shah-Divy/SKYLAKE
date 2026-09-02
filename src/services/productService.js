@@ -101,6 +101,8 @@ export const productService = {
   update: async (id, payload) => {
     let response;
     if (payload instanceof FormData) {
+      // Add _method field for Laravel method spoofing
+      payload.append('_method', 'PUT');
       response = await api.post(`/admin/products/${id}`, payload, {
         headers: {
           'Content-Type': 'multipart/form-data',

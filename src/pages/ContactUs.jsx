@@ -80,6 +80,15 @@ function ContactUsContent() {
         // Persist a flag so other pages (like Downloads) can allow gated actions
         try {
           localStorage.setItem('contact_form_submitted', JSON.stringify({ ts: Date.now(), name: payload.name, email: payload.email }));
+          // Auto-download brochure if one was pending
+          const pendingBrochureUrl = sessionStorage.getItem('pending_brochure_url');
+          if (pendingBrochureUrl) {
+            // Small delay to ensure localStorage is synced
+            setTimeout(() => {
+              window.open(pendingBrochureUrl, '_blank');
+              sessionStorage.removeItem('pending_brochure_url');
+            }, 300);
+          }
         } catch (err) {
           console.warn('Could not set localStorage flag for contact submission', err);
         }

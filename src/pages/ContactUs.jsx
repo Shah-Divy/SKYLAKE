@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Mail, Phone, MapPin, Send, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
@@ -6,6 +7,8 @@ import api from '../services/api';
 
 function ContactUsContent() {
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const [searchParams] = useSearchParams();
+  const brochureUrl = searchParams.get('brochure');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +52,22 @@ function ContactUsContent() {
     }
   };
 
+  // Function to trigger automatic download
+  const triggerBrochureDownload = (url) => {
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = url.split('/').pop() || 'brochure.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error downloading brochure:', err);
+      // Fallback: open in new window
+      window.open(url, '_blank');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
@@ -80,25 +99,28 @@ function ContactUsContent() {
         // Persist a flag so other pages (like Downloads) can allow gated actions
         try {
           localStorage.setItem('contact_form_submitted', JSON.stringify({ ts: Date.now(), name: payload.name, email: payload.email }));
-          // Auto-download brochure if one was pending
-          const pendingBrochureUrl = sessionStorage.getItem('pending_brochure_url');
-          if (pendingBrochureUrl) {
-            // Small delay to ensure localStorage is synced
-            setTimeout(() => {
-              window.open(pendingBrochureUrl, '_blank');
-              sessionStorage.removeItem('pending_brochure_url');
-            }, 300);
-          }
         } catch (err) {
           console.warn('Could not set localStorage flag for contact submission', err);
         }
+        
+        // Automatically download brochure if URL is available
+        if (brochureUrl) {
+          console.log('Triggering automatic brochure download...');
+          setTimeout(() => {
+            triggerBrochureDownload(brochureUrl);
+          }, 1000); // 1 second delay to ensure success state is shown first
+        }
+        
         // show success toast if SweetAlert2 is available
         try {
           const Swal = (await import('sweetalert2')).default;
+          const toastMessage = brochureUrl 
+            ? 'Your inquiry has been received and brochure download started.' 
+            : 'Your inquiry has been received. We will respond shortly.';
           Swal.fire({
             icon: 'success',
             title: 'Message sent',
-            text: 'Your inquiry has been received. We will respond shortly.',
+            text: toastMessage,
             timer: 2500,
             showConfirmButton: false,
             toast: true,

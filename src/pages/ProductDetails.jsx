@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   FileText,
   Share2,
@@ -22,10 +22,12 @@ import ProductCard from '../components/ProductCard';
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [relatedProductsList, setRelatedProductsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiFailed, setApiFailed] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   const mapProduct = (doc) => ({
     id: doc._id || doc.id,
@@ -93,6 +95,39 @@ export default function ProductDetails() {
   }, [activeProduct]);
 
   const [shareSuccess, setShareSuccess] = useState(false);
+
+  // Check if user has submitted contact form
+  useEffect(() => {
+    const submittedData = localStorage.getItem('contact_form_submitted');
+    setIsFormSubmitted(!!submittedData);
+  }, []);
+
+  // Handle brochure download with gate-keeping logic
+  const handleBrochureDownload = (e, url) => {
+    if (!isFormSubmitted) {
+      e.preventDefault();
+      // Store brochure URL for auto-download after form submission
+      sessionStorage.setItem('pending_brochure_url', url);
+      // Redirect to contact form
+      navigate('/contact');
+      return;
+    }
+    // If form is submitted, allow download by opening the URL
+    window.open(url, '_blank');
+  };
+
+  // Auto-download brochure if user just submitted contact form
+  useEffect(() => {
+    const pendingBrochureUrl = sessionStorage.getItem('pending_brochure_url');
+    if (pendingBrochureUrl && isFormSubmitted) {
+      // Delay slightly to ensure localStorage flag is set
+      const timer = setTimeout(() => {
+        window.open(pendingBrochureUrl, '_blank');
+        sessionStorage.removeItem('pending_brochure_url');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isFormSubmitted]);
 
   // Loading indicator rendering
   if (loading) {
@@ -293,13 +328,13 @@ export default function ProductDetails() {
                 </Link>
                 
                 {brochureUrl && (
-                  <a
-                    href={brochureUrl}
-                    className="sm:w-60 bg-brand-slate-light hover:bg-slate-100 text-slate-700 font-extrabold text-xs py-4 rounded-xl text-center border border-slate-200 transition-colors flex items-center justify-center gap-1.5"
+                  <button
+                    onClick={(e) => handleBrochureDownload(e, brochureUrl)}
+                    className="sm:w-60 bg-brand-slate-light hover:bg-slate-100 text-slate-700 font-extrabold text-xs py-4 rounded-xl text-center border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileText className="w-4 h-4 text-brand-teal" />
-                    Download Brochure (PDF)
-                  </a>
+                    {isFormSubmitted ? 'Download Brochure (PDF)' : 'Complete Form to Download'}
+                  </button>
                 )}
               </div>
 

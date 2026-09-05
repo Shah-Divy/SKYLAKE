@@ -106,8 +106,6 @@ export default function ProductDetails() {
   const handleBrochureDownload = (e, url) => {
     if (!isFormSubmitted) {
       e.preventDefault();
-      // Store brochure URL for auto-download after form submission
-      sessionStorage.setItem('pending_brochure_url', url);
       // Redirect to contact form
       navigate('/contact');
       return;
@@ -115,19 +113,6 @@ export default function ProductDetails() {
     // If form is submitted, allow download by opening the URL
     window.open(url, '_blank');
   };
-
-  // Auto-download brochure if user just submitted contact form
-  useEffect(() => {
-    const pendingBrochureUrl = sessionStorage.getItem('pending_brochure_url');
-    if (pendingBrochureUrl && isFormSubmitted) {
-      // Delay slightly to ensure localStorage flag is set
-      const timer = setTimeout(() => {
-        window.open(pendingBrochureUrl, '_blank');
-        sessionStorage.removeItem('pending_brochure_url');
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isFormSubmitted]);
 
   // Loading indicator rendering
   if (loading) {
@@ -321,7 +306,7 @@ export default function ProductDetails() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-2">
                 <Link
-                  to="/contact"
+                  to={`/contact${brochureUrl ? `?brochure=${encodeURIComponent(brochureUrl)}` : ''}`}
                   className="flex-grow bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs py-4 rounded-xl text-center shadow-lg transition-colors cursor-pointer"
                 >
                   Request Technical Quotation
